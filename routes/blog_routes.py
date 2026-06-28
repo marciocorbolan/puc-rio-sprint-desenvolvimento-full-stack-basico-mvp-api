@@ -8,7 +8,7 @@ from config import SECRET_KEY
 from database import db
 from models.blog import Blog
 from models.post import Post
-from routes.decorators import token_required
+from middlewares.decorators import token_required
 from utils.file_manager import get_image_as_base64, save_image_from_base64
 from utils.text_utils import slugify
 from utils.validation import validate_base64_image
