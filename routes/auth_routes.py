@@ -1,11 +1,14 @@
+# --- Bibliotecas de Terceiros ---
 from flask import Blueprint, request, jsonify
 import jwt
 import datetime
+from werkzeug.security import check_password_hash, generate_password_hash
+
+# --- Módulos do Projeto ---
 from config import SECRET_KEY
 from database import db
 from models.user import User
 from routes.decorators import token_required
-from werkzeug.security import check_password_hash, generate_password_hash
 
 auth_bp = Blueprint('auth', __name__)
 
