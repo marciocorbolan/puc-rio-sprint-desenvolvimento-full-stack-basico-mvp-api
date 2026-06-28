@@ -3,6 +3,7 @@ from flasgger import Swagger
 import config
 from database import db, inicializar_banco
 from error_handlers import register_error_handlers
+from routes.auth_routes import auth_bp
 from routes.basic_routes import basic_bp
 
 def create_app():
@@ -15,6 +16,9 @@ def create_app():
     # O Flasgger vai escanear todos os blueprints registrados automaticamente
     # e montar a documentação com base nas docstrings que você escrever
     Swagger(app)
+
+    # Registro do Blueprint de autenticação
+    app.register_blueprint(auth_bp, url_prefix='/auth')
 
     # Registro dos Blueprints
     app.register_blueprint(basic_bp)
