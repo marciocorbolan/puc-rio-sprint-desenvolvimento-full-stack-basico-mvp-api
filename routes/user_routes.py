@@ -57,10 +57,12 @@ def update_profile():
         return jsonify({"message": "Usuário não encontrado"}), 404
         
     data = request.get_json()
-    
-    # Atualiza dados se forem enviados
-    user.nome = data.get('nome', user.nome)
-    user.email = data.get('email', user.email)
+
+    if data.get('nome'):
+      user.nome = data['nome']
+
+    if data.get('email'):
+      user.email = data['email']
     
     db.session.commit()
     
