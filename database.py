@@ -15,6 +15,9 @@ def inicializar_banco(app):
     # Importação local para evitar importação circular
     from models.user import User
     from models.user_status import UserStatus
+    from models.blog import Blog
+    from models.post import Post
+    from models.comment import Comment
 
     # O correto é utilizar migrations para atualizar o banco de dados, mas para fins de simplicidade, vamos apenas criar as tabelas se não existirem.
     with app.app_context():
