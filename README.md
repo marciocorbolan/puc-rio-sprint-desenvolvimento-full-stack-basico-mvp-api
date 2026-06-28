@@ -23,6 +23,7 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 ├── app.py                # Inicializa o Flask e registra as rotas
 ├── config.py             # Configurações (secret key, banco, etc)
 ├── database.py           # Métodos auxiliares para o banco de dados
+├── error_handlers.py     # Tratativa dos erros
 ├── models/               # Classes do SQLAlchemy
 │   ├── __init__.py
 │   ├── usuario.py        # Modelo de Usuário
@@ -30,6 +31,7 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 │   └── comentario.py     # Modelo de Comentário
 ├── routes/               # Lógica das rotas (controllers)
 │   ├── __init__.py
+│   ├── basic_routes.py   # Basico
 │   ├── auth_routes.py    # Login e Cadastro
 │   └── blog_routes.py    # CRUD de posts e comentários
 └── uploads/              # Pasta para salvar as imagens dos posts
