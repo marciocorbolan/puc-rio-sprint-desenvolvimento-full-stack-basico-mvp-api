@@ -22,6 +22,7 @@ Este projeto é o MVP da sprint de Desenvolvimento Full Stack Básico, focado na
 puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 ├── app.py                # Inicializa o Flask e registra as rotas
 ├── config.py             # Configurações (secret key, banco, etc)
+├── database.py           # Métodos auxiliares para o banco de dados
 ├── models/               # Classes do SQLAlchemy
 │   ├── __init__.py
 │   ├── usuario.py        # Modelo de Usuário
