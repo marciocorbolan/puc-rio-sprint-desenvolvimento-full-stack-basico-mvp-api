@@ -12,3 +12,6 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, DB_NAME)
 
 # Configuração necessária para evitar avisos do Flask-SQLAlchemy
 SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+# Chave secreta para JWT
+SECRET_KEY = 'uma-chave-bem-longa-e-aleatoria-como-exemplo-123456789-!@#$'

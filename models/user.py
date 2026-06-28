@@ -8,7 +8,9 @@ class User(db.Model):
     nome = db.Column(db.String(256), nullable=False)
     data_nasc = db.Column(db.String(10))
     email = db.Column(db.String(256), nullable=False)
+    senha = db.Column(db.String(256), nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey('user_status.id'), nullable=False)
 
     # Relacionamento Many-to-One: Muitos usuários para um status
+    # 'UserStatus' como string evita erro de importação circular
     status = db.relationship('UserStatus', backref='users')
