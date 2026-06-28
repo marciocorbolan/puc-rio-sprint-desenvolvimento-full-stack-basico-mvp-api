@@ -26,9 +26,11 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 ├── error_handlers.py     # Tratativa dos erros
 ├── models/               # Classes do SQLAlchemy
 │   ├── __init__.py
-│   ├── usuario.py        # Modelo de Usuário
-│   ├── postagem.py       # Modelo de Post (com texto e caminho da imagem)
-│   └── comentario.py     # Modelo de Comentário
+│   ├── user.py           # Modelo user
+│   ├── user_status.py    # Modelo status do modelo user
+│   └── blog.py           # Modelo blog
+│   ├── post.py           # Modelo post (com texto e caminho da imagem)
+│   └── comment.py        # Modelo comment
 ├── routes/               # Lógica das rotas (controllers)
 │   ├── __init__.py
 │   ├── basic_routes.py   # Basico

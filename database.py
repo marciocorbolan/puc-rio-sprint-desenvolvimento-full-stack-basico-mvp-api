@@ -1,4 +1,3 @@
-# database.py
 import os
 from flask_sqlalchemy import SQLAlchemy
 
@@ -10,8 +9,15 @@ def inicializar_banco(app):
     
     if not os.path.exists(db_path):
         print(f"Banco não encontrado. Criando em: {db_path}...")
-        with app.app_context():
-            db.create_all()
-        print("Banco criado com sucesso!")
     else:
-        print("Banco de dados já existente.")
+        print(f"Banco de dados encontrado: {db_path}")
+
+    # Importação local para evitar importação circular
+    from models.user import User
+    from models.user_status import UserStatus
+
+    # O correto é utilizar migrations para atualizar o banco de dados, mas para fins de simplicidade, vamos apenas criar as tabelas se não existirem.
+    with app.app_context():
+        db.create_all()
+
+    print("Banco criado/atualizado com sucesso!")
