@@ -94,7 +94,7 @@ source venv/bin/activate
 
 3. **Pacotes - Instalação:** Os pacotes estão versionados para garantir a compatibilidade (Ação única).
 ```bash
-pip install click==8.4.2 Flask==3.1.3 Flask-SQLAlchemy==3.1.1 greenlet==3.5.3 importlib-metadata==9.0.0 itsdangerous==2.2.0 Jinja2==3.1.6 MarkupSafe==3.0.3 nose==1.3.7 SQLAlchemy==2.0.51 SQLAlchemy-Utils==0.42.1 Werkzeug==3.1.8 zipp==4.1.0 flasgger==0.9.7 PyYAML==6.0.2
+pip install click==8.4.2 Flask==3.1.3 Flask-SQLAlchemy==3.1.1 greenlet==3.5.3 importlib-metadata==9.0.0 itsdangerous==2.2.0 Jinja2==3.1.6 MarkupSafe==3.0.3 nose==1.3.7 SQLAlchemy==2.0.51 SQLAlchemy-Utils==0.42.1 Werkzeug==3.1.8 zipp==4.1.0 flasgger==0.9.7.1 PyYAML==6.0.2
 ```
 
 ### 3. Acesso ao projeto 🚀
