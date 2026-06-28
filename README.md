@@ -20,23 +20,31 @@ Este projeto é o MVP da sprint de Desenvolvimento Full Stack Básico, focado na
 
 ```text
 puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
-├── app.py                # Inicializa o Flask e registra as rotas
-├── config.py             # Configurações (secret key, banco, etc)
-├── database.py           # Métodos auxiliares para o banco de dados
-├── error_handlers.py     # Tratativa dos erros
-├── models/               # Classes do SQLAlchemy
+├── app.py                # Ponto de entrada da aplicação; configura o Flask e registra as rotas
+├── config.py             # Gerenciamento de variáveis de ambiente e configurações globais (ex: SECRET_KEY)
+├── database.py           # Instanciação e configuração da conexão com o banco de dados (SQLAlchemy)
+├── error_handlers.py     # Centralização de tratativas de erros e exceções
+├── middlewares/          # Camada de processamento intermediário
+│   └── decorators.py     # Tratativa customizadas (ex: controle de acesso e autenticação JWT)
+├── models/               # Definição das entidades do banco de dados (ORM)
 │   ├── __init__.py
-│   ├── user.py           # Modelo user
+│   ├── blog.py           # Modelo blog
+│   ├── comment.py        # Modelo comment
+│   ├── post.py           # Modelo post
 │   ├── user_status.py    # Modelo status do modelo user
-│   └── blog.py           # Modelo blog
-│   ├── post.py           # Modelo post (com texto e caminho da imagem)
-│   └── comment.py        # Modelo comment
+│   └── user.py           # Modelo user
 ├── routes/               # Lógica das rotas (controllers)
 │   ├── __init__.py
-│   ├── basic_routes.py   # Basico
-│   ├── auth_routes.py    # Login e Cadastro
-│   └── blog_routes.py    # CRUD de posts e comentários
-└── uploads/              # Pasta para salvar as imagens dos posts
+│   ├── auth_routes.py    # Endpoints de autenticação (registro, login, logout)
+│   ├── basic_routes.py   # Endpoints basico (status / home)
+│   ├── blog_routes.py    # Endpoints para o blog (CRUD completo)
+│   └── user_routes.py    # Endpoints de gerenciamento de perfil do usuário
+├── utils/                # Conjunto de funções auxiliares e lógica de suporte
+│   ├── __init__.py
+│   ├── file_manager.py   # Lógica para salvamento e leitura de arquivos em disco
+│   ├── text_utils.py     # Funções auxiliares para manipulação de texto (ex: slugify)
+│   └── validation.py     # Lógica de validação de dados de entrada e imagens (Base64)
+└── uploads/              # Diretório de armazenamento físico de ativos (imagens)
 ```
 
 ### 📦 Pacotes
