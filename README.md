@@ -25,6 +25,7 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 ├── database.py           # Instanciação e configuração da conexão com o banco de dados (SQLAlchemy)
 ├── error_handlers.py     # Centralização de tratativas de erros e exceções
 ├── middlewares/          # Camada de processamento intermediário
+│   ├── __init__.py
 │   └── decorators.py     # Tratativa customizadas (ex: controle de acesso e autenticação JWT)
 ├── models/               # Definição das entidades do banco de dados (ORM)
 │   ├── __init__.py
