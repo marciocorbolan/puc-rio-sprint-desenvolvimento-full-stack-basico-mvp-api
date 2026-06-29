@@ -16,7 +16,7 @@ user_bp = Blueprint('user', __name__)
 @token_required
 def get_profile():
     """
-    Exibe os dados do próprio usuário logado
+    Exibe os dados do usuário logado
     ---
     tags:
       - Usuário
@@ -28,7 +28,7 @@ def get_profile():
     
     user = User.query.get(data['user_id'])
     if not user:
-        return jsonify({"message": "Usuário não encontrado"}), 404
+        return jsonify({"message": "Cadastro não encontrado"}), 404
         
     return jsonify({
         "nome": user.nome,
@@ -42,7 +42,7 @@ def get_profile():
 @token_required
 def update_profile():
     """
-    Altera os dados do próprio usuário logado
+    Altera os dados do usuário logado
     ---
     tags:
       - Usuário
@@ -54,7 +54,7 @@ def update_profile():
     
     user = User.query.get(data_token['user_id'])
     if not user:
-        return jsonify({"message": "Usuário não encontrado"}), 404
+        return jsonify({"message": "Cadastro não encontrado"}), 404
         
     data = request.get_json()
 
@@ -66,4 +66,4 @@ def update_profile():
     
     db.session.commit()
     
-    return jsonify({"message": "Dados atualizados com sucesso!"}), 200
+    return jsonify({"message": "Cadastro atualizado com sucesso!"}), 200

@@ -8,25 +8,30 @@ from config import SECRET_KEY
 from database import db
 from models.blog import Blog
 from models.post import Post
+from models.user import User
+from models.comment import Comment
 from middlewares.decorators import token_required
 from utils.file_manager import get_image_as_base64, save_image_from_base64
 from utils.text_utils import slugify
 from utils.validation import validate_base64_image
 
-blog_bp = Blueprint('blog', __name__)
+post_bp = Blueprint('post', __name__)
 
-@blog_bp.route('/', methods=['GET'])
-def list_blogs():
+@post_bp.route('/', methods=['GET'])
+def list_posts():
     """
-    Lista blogs com filtros dinâmicos
+    Lista posts com filtros dinâmicos
     ---
     tags:
-      - Blog
+      - Post
     parameters:
       - name: user_id
         in: query
         type: integer
-      - name: nome
+      - name: blog_id
+        in: query
+        type: integer
+      - name: titulo
         in: query
         type: string
       - name: data_cadastro_inicio
@@ -37,63 +42,67 @@ def list_blogs():
         in: query
         type: string
         description: Formato YYYY-MM-DD HH:MM:SS
-      - name: com_posts
+      - name: com_comentarios
         in: query
         type: boolean
     responses:
       200:
         description: Lista processada com sucesso
     """
-    query = Blog.query
+    query = Post.query
     
     # Parâmetros de filtro
     user_id = request.args.get('user_id')
-    nome = request.args.get('nome')
+    blog_id = request.args.get('blog_id')
+    titulo = request.args.get('titulo')
     data_cadastro_inicio = request.args.get('data_cadastro_inicio')
     data_cadastro_fim = request.args.get('data_cadastro_fim')
-    com_posts = request.args.get('com_posts', 'false').lower() == 'true'
+    com_comentarios = request.args.get('com_comentarios', 'false').lower() == 'true'
 
     # 1. Filtros simples
     if user_id:
-        query = query.filter(Blog.user_id == user_id)
-    if nome:
-        query = query.filter(Blog.nome.ilike(f'%{nome}%'))
+        query = query.join(Post.user).filter(User.id == user_id)
+    if blog_id:
+        query = query.filter(Post.blog_id == blog_id)
+    if titulo:
+        query = query.filter(Post.titulo.ilike(f'%{titulo}%'))
 
     # 2. Lógica de Range para data_cadastro
     if data_cadastro_inicio and data_cadastro_fim:
         if data_cadastro_inicio > data_cadastro_fim:
-            return jsonify({"message": "data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
-        query = query.filter(Blog.data_cadastro.between(data_cadastro_inicio, data_cadastro_fim))
+            return jsonify({"message": "data_cadastro_data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
+        query = query.filter(Post.data_cadastro.between(data_cadastro_inicio, data_cadastro_fim))
     elif data_cadastro_inicio:
-        query = query.filter(Blog.data_cadastro == data_cadastro_inicio)
+        query = query.filter(Post.data_cadastro == data_cadastro_inicio)
     elif data_cadastro_fim:
-        query = query.filter(Blog.data_cadastro == data_cadastro_fim)
+        query = query.filter(Post.data_cadastro == data_cadastro_fim)
 
-    # 3. Filtro de blogs com posts
-    if com_posts:
-        query = query.join(Post).distinct()
+    # 3. Filtro de blogs com comentarios
+    if com_comentarios:
+        query = query.join(Comment).distinct()
 
-    blogs = query.all()
+    posts = query.all()
     
     return jsonify([{
-        "id": b.id,
-        "user_id": b.user_id,
-        "nome": b.nome,
-        "slug": slugify(b.nome),
+        "id": p.id,
+        "user_id": p.user_id,
+        "blog_id": p.blog_id,
+        "titulo": p.titulo,
+        "slug": slugify(p.titulo),
         "image": get_image_as_base64(b.imagem),
-        "user_id": b.user_id,
-        "data_cadastro": b.data_cadastro
-    } for b in blogs]), 200
+        "data_cadastro": p.data_cadastro,
+        "data_atualizacao": p.data_atualizacao
+    } for p in posts]), 200
 
 #########################################################################
 
-@blog_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_blog(id, slug):
+@post_bp.route('/<int:id>/<slug>', methods=['GET'])
+def get_post(id, slug):
     """
-    Exibe os detalhes de um blog específico por ID
+    Exibe os detalhes de um post específico por ID
     ---
     tags:
-      - Blog
+      - Post
     parameters:
       - name: id
         in: path
@@ -114,32 +123,33 @@ def get_blog(id, slug):
     if not id:
         return jsonify({"message": "ID não informado"}), 400
 
-    # Verifica se o blog existe
-    blog = Blog.query.get(id)
-    if not blog:
+    # Verifica se o post existe
+    post = Post.query.get(id)
+    if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
-    
-    # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do blog
+
+    # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do post
         
     return jsonify({
-        "id": blog.id,
-        "user_id": blog.user_id,
-        "nome": blog.nome,
+        "id": post.id,
+        "user_id": post.user_id,
+        "blog_id": post.blog_id,
+        "titulo": post.titulo,
         "slug": slug,
-        "image": get_image_as_base64(blog.imagem),
-        "data_cadastro": blog.data_cadastro
+        "image": get_image_as_base64(post.imagem),
+        "data_cadastro": post.data_cadastro
     }), 200
 
 #########################################################################
 
-@blog_bp.route('/', methods=['POST'])
+@post_bp.route('/', methods=['POST'])
 @token_required
-def create_blog():
+def create_post():
     """
-    Cria um novo blog para o usuário logado
+    Cria um novo post vinculado a um blog do usuário logado
     ---
     tags:
-      - Blog
+      - Post
     security:
       - Bearer: []
     parameters:
@@ -149,11 +159,15 @@ def create_blog():
         schema:
           type: object
           required:
-            - nome
+            - blog_id
+            - titulo
           properties:
-            nome:
+            blog_id:
+              type: integer
+              description: ID do blog (obrigatório)
+            titulo:
               type: string
-              description: Nome do blog (obrigatório)
+              description: título do post (obrigatório)
             imagem:
               type: string
               description: Base64 da imagem (opcional)
@@ -168,16 +182,24 @@ def create_blog():
     
     data = request.get_json()
 
-    if not data.get('nome'):
-        return jsonify({"message": "Nome é obrigatório"}), 400
-    nome = data.get('nome')
+    if not data.get('blog_id'):
+        return jsonify({"message": "blog_id é obrigatório"}), 400
+    
+    # Verifica se o blog existe e pertence ao usuário
+    blog = Blog.query.get(data['blog_id'])
+    if not blog or blog.user_id != data_token['user_id']:
+        return jsonify({"message": "Acesso negado ou blog inexistente"}), 403
+
+    if not data.get('titulo'):
+        return jsonify({"message": "Título é obrigatório"}), 400
+    titulo = data.get('titulo')
     
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
     data_cadastro_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
 
-    blog = Blog(
-        user_id=data_token['user_id'],
-        nome=nome,
+    post = Post(
+        blog_id=data['blog_id'],
+        titulo=titulo,
         data_cadastro=data_cadastro_atualizacao_formatada,
         data_atualizacao=data_cadastro_atualizacao_formatada
     )
@@ -187,37 +209,37 @@ def create_blog():
         if not valido:
             return jsonify({"message": erro}), 400
         
-        # O ID só existe após o commit, então criamos o blog antes
-        db.session.add(blog)
+        # O ID só existe após o commit, então criamos o post antes
+        db.session.add(post)
         db.session.commit() # Agora teremo o ID
         
         # Salva o arquivo e atualiza o caminho no banco
-        caminho_imagem = save_image_from_base64(img_bytes, 'blog', blog.id)
+        caminho_imagem = save_image_from_base64(img_bytes, 'post', post.id)
         if not caminho_imagem:
-            # Removemos o blog criado se a imagem falhar (transação manual)
-            db.session.delete(blog)
+            # Removemos o post criado se a imagem falhar (transação manual)
+            db.session.delete(post)
             db.session.commit()
 
             return jsonify({"message": "Erro ao salvar imagem no servidor"}), 500
         else:
-            blog.imagem = caminho_imagem
+            post.imagem = caminho_imagem
             db.session.commit()
     else:
-        db.session.add(blog)
+        db.session.add(post)
         db.session.commit()
 
-    return jsonify({"message": "Cadastro realizado com sucesso", "id": blog.id}), 201
+    return jsonify({"message": "Cadastro realizado com sucesso", "id": post.id}), 201
 
 #########################################################################
 
-@blog_bp.route('/<int:id>', methods=['PUT'])
+@post_bp.route('/<int:id>', methods=['PUT'])
 @token_required
-def update_blog(id):
+def update_post(id):
     """
-    Edita um blog existente (Apenas se for o dono)
+    Edita um post existente (Apenas se for o dono)
     ---
     tags:
-      - Blog
+      - Post
     security:
       - Bearer: []
     parameters:
@@ -231,9 +253,9 @@ def update_blog(id):
         schema:
           type: object
           properties:
-            nome:
+            titulo:
               type: string
-              description: Nome (opcional)
+              description: título (opcional)
             imagem:
               type: string
               description: Base64 da imagem (opcional)
@@ -254,34 +276,34 @@ def update_blog(id):
     if not id:
         return jsonify({"message": "ID não informado"}), 400
     
-    blog = Blog.query.get(id)
-    if not blog:
+    post = Post.query.get(id)
+    if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    # Segurança: Verifica se o usuário logado é o dono do blog
-    if blog.user_id != data_token['user_id']:
-        return jsonify({"message": "Acesso negado: Você não é o dono deste blog"}), 403
+    # Segurança: Verifica se o usuário logado é o dono do post
+    if post.blog.user_id != data_token['user_id']:
+        return jsonify({"message": "Acesso negado: Você não é o dono deste post"}), 403
     
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
     data_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
 
     data = request.get_json()
 
-    if data.get('nome'):
-        blog.nome = data['nome']
+    if data.get('titulo'):
+        post.titulo = data['titulo']
 
     if data.get('imagem'):
         valido, erro, img_bytes = validate_base64_image(data['imagem'])
         if not valido:
             return jsonify({"message": erro}), 400
         
-        caminho_imagem = save_image_from_base64(img_bytes, 'blog', blog.id)
+        caminho_imagem = save_image_from_base64(img_bytes, 'post', post.id)
         if not caminho_imagem:
             return jsonify({"message": "Erro ao salvar imagem no servidor"}), 500
         else:
-            blog.imagem = caminho_imagem
+            post.imagem = caminho_imagem
 
-    blog.data_atualizacao = data_atualizacao_formatada
+    post.data_atualizacao = data_atualizacao_formatada
 
     db.session.commit()
 

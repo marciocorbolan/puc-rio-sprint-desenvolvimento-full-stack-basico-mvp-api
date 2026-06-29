@@ -40,9 +40,9 @@ def register():
               type: string
     responses:
       201:
-        description: Usuário criado com sucesso!
+        description: Cadastro criado com sucesso
       400:
-        description: Erro de validação (campos vazios ou CPF/Email já em uso)
+        description: Erro de validação
     """
     data = request.get_json()
     
@@ -153,6 +153,6 @@ def logout():
       - Bearer: []
     responses:
       200:
-        description: Logout realizado com sucesso!
+        description: Logout realizado com sucesso
     """
     return jsonify({"message": "Logout realizado com sucesso!"}), 200
