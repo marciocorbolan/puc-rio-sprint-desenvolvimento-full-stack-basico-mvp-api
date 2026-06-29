@@ -5,7 +5,8 @@ class UserStatus(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(256), nullable=False)
-    
-    # Relacionamento One-to-Many: Um status para muitos usuários
-    # 'User' como string evita erro de importação circular
-    users = db.relationship('User', backref='status', lazy=True)
+
+    # Definir o modelo como string evita erro de importação circular
+
+    # Relacionamento One-to-Many: Um status user possui muitos users
+    users = db.relationship('User', back_populates='status', lazy=True)

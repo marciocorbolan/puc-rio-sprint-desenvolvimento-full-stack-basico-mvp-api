@@ -10,10 +10,10 @@ class Blog(db.Model):
     data_cadastro = db.Column(db.String(19))
     data_atualizacao = db.Column(db.String(19))
 
-    # Relacionamento One-to-Many: Um status para muitos usuários
-    # 'User' como string evita erro de importação circular
-    user = db.relationship('User', backref='blogs')
+    # Definir o modelo como string evita erro de importação circular
 
-    # Relacionamento Many-to-One: Muitos usuários para um status
-    # 'Post' como string evita erro de importação circular
-    posts = db.relationship('Post', backref='blog', lazy=True)
+    # Relacionamento Many-to-One: Muitos blogs pertencem a um usuário
+    user = db.relationship('User', back_populates='blogs')
+
+    # Relacionamento One-to-Many: Um blog possui muitos posts
+    posts = db.relationship('Post', back_populates='blog', lazy=True)

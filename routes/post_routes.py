@@ -111,7 +111,7 @@ def get_post(id, slug):
       - name: slug
         in: path
         type: string
-        required: true
+        required: false
     responses:
       200:
         description: Cadastro encontrado
@@ -198,7 +198,7 @@ def create_post():
     data_cadastro_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
 
     post = Post(
-        blog_id=data['blog_id'],
+        blog_id=blog.id,
         titulo=titulo,
         data_cadastro=data_cadastro_atualizacao_formatada,
         data_atualizacao=data_cadastro_atualizacao_formatada

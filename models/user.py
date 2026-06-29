@@ -11,6 +11,13 @@ class User(db.Model):
     senha = db.Column(db.String(256), nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey('user_status.id'), nullable=False)
 
-    # Relacionamento Many-to-One: Muitos usuários para um status
-    # 'UserStatus' como string evita erro de importação circular
-    status = db.relationship('UserStatus', backref='users')
+    # Definir o modelo como string evita erro de importação circular
+
+    # Relacionamento Many-to-One: Muitos users pertencem a um status user
+    status = db.relationship('UserStatus', back_populates='users')
+
+    # Relacionamento One-to-Many: Um usuário possui muitos blogs
+    blogs = db.relationship('Blog', back_populates='user', lazy=True)
+
+    # Relacionamento One-to-Many: Um usuário possui muitos comentários
+    comments = db.relationship('Comment', back_populates='user', lazy=True)
