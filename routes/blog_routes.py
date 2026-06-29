@@ -240,12 +240,8 @@ def update_blog(id):
     responses:
       200:
         description: Cadastro atualizado com sucesso
-      400:
-        description: Erro de validação
       403:
         description: Acesso negado
-      404:
-        description: Cadastro não encontrado
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])

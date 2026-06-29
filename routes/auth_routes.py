@@ -88,7 +88,7 @@ def register():
     db.session.add(novo_usuario)
     db.session.commit()
     
-    return jsonify({"message": "Usuário criado com sucesso!"}), 201
+    return jsonify({"message": "Cadastro criado com sucesso"}), 201
 
 #########################################################################
 
