@@ -102,7 +102,7 @@ def get_blog(id, slug):
       - name: slug
         in: path
         type: string
-        required: true
+        required: false
     responses:
       200:
         description: Cadastro encontrado

@@ -11,6 +11,7 @@ from routes.basic_routes import basic_bp
 from routes.user_routes import user_bp
 from routes.blog_routes import blog_bp
 from routes.post_routes import post_bp
+from routes.comment_routes import comment_bp
 
 def create_app():
     app = Flask(__name__)
@@ -40,6 +41,9 @@ def create_app():
 
     # Registro do blueprint de posts
     app.register_blueprint(post_bp, url_prefix='/posts')
+
+    # Registro do blueprint de comments
+    app.register_blueprint(comment_bp, url_prefix='/comments')
 
     # Inicializa a criação das tabelas se o arquivo .db não existir
     with app.app_context():

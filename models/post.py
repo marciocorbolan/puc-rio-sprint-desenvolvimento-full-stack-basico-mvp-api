@@ -9,13 +9,13 @@ class Post(db.Model):
     data_cadastro = db.Column(db.String(19))
     data_atualizacao = db.Column(db.String(19))
 
-    # Relacionamento One-to-Many: Um status para muitos usuários
-    # 'Blog' como string evita erro de importação circular
-    blog = db.relationship('Blog', backref='post')
+    # Definir o modelo como string evita erro de importação circular
 
-    # Relacionamento Many-to-One: Muitos usuários para um status
-    # 'Comment' como string evita erro de importação circular
-    comments = db.relationship('Comment', backref='post', lazy=True)
+    # Relacionamento Many-to-One: Muitos posts pertencem a um blog
+    blog = db.relationship('Blog', back_populates='posts')
+
+    # Relacionamento One-to-Many: Um post possui muitos comentários
+    comments = db.relationship('Comment', back_populates='post', lazy=True)
 
     # Relacionamento de acesso direto ao User através do Blog
     # viewonly=True garante que ele apenas leia a relação sem tentar alterar o banco
