@@ -48,6 +48,8 @@ def list_posts():
     responses:
       200:
         description: Lista processada com sucesso
+      400:
+        description: Erro de validação
     """
     query = Post.query
     
@@ -115,6 +117,8 @@ def get_post(id, slug):
     responses:
       200:
         description: Cadastro encontrado
+      400:
+        description: Erro de validação
       404:
         description: Cadastro não encontrado
     """
@@ -167,15 +171,21 @@ def create_post():
               description: ID do blog (obrigatório)
             titulo:
               type: string
-              description: título do post (obrigatório)
+              description: título (obrigatório)
             imagem:
               type: string
-              description: Base64 da imagem (opcional)
+              description: Imagem em Base64 (opcional)
     responses:
       201:
         description: Cadastro criado com sucesso
       400:
         description: Erro de validação
+      401:
+        description: Credenciais inválidas
+      403:
+        description: Acesso negado
+      500:
+        description: Erro interno no servidor
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -258,16 +268,20 @@ def update_post(id):
               description: título (opcional)
             imagem:
               type: string
-              description: Base64 da imagem (opcional)
+              description: Imagem em Base64 (opcional)
     responses:
       200:
         description: Cadastro atualizado com sucesso
       400:
         description: Erro de validação
+      401:
+        description: Credenciais inválidas
       403:
         description: Acesso negado
       404:
         description: Cadastro não encontrado
+      500:
+        description: Erro interno no servidor
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])

@@ -40,6 +40,8 @@ def list_comments():
     responses:
       200:
         description: Lista processada com sucesso
+      400:
+        description: Erro de validação
     """
     query = Comment.query
     
@@ -92,6 +94,8 @@ def get_comment(id):
     responses:
       200:
         description: Cadastro encontrado
+      400:
+        description: Erro de validação
       404:
         description: Cadastro não encontrado
     """
@@ -145,12 +149,16 @@ def create_comment():
               description: Texto (obrigatório)
             imagem:
               type: string
-              description: Base64 da imagem (opcional)
+              description: Imagem em Base64 (opcional)
     responses:
       201:
         description: Cadastro criado com sucesso
       400:
         description: Erro de validação
+      401:
+        description: Credenciais inválidas
+      404:
+        description: Cadastro não encontrado
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])

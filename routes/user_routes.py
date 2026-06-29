@@ -22,6 +22,13 @@ def get_profile():
       - Usuário
     security:
       - Bearer: []
+    responses:
+      200:
+        description: Cadastro encontrado
+      401:
+        description: Credenciais inválidas
+      404:
+        description: Cadastro não encontrado
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -55,17 +62,20 @@ def update_profile():
           properties:
             nome:
               type: string
+              description: Nome (opcional)
             email:
               type: string
+              description: Email (opcional)
             senha:
               type: string
+              description: Senha (opcional)
     responses:
       200:
         description: Cadastro atualizado com sucesso
       400:
         description: Erro de validação
-      403:
-        description: Acesso negado
+      401:
+        description: Credenciais inválidas
       404:
         description: Cadastro não encontrado
     """
