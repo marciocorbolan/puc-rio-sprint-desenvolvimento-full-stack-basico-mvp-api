@@ -32,12 +32,16 @@ def register():
           properties:
             cpfcnpj:
               type: string
+              description: CPF ou CNPJ (obrigatório)
             nome:
               type: string
+              description: Nome (obrigatório)
             email:
               type: string
+              description: Email (obrigatório)
             senha:
               type: string
+              description: Senha (obrigatório)
     responses:
       201:
         description: Cadastro criado com sucesso
@@ -104,14 +108,21 @@ def login():
         name: body
         schema:
           type: object
+          required:
+            - cpfcnpj
+            - senha
           properties:
             cpfcnpj:
               type: string
+              description: CPF ou CNPJ (obrigatório)
             senha:
               type: string
+              description: Senha (obrigatório)
     responses:
       200:
         description: Token JWT retornado
+      400:
+        description: Erro de validação
       401:
         description: Credenciais inválidas
     """
@@ -154,5 +165,9 @@ def logout():
     responses:
       200:
         description: Logout realizado com sucesso
+      400:
+        description: Erro de validação
+      401:
+        description: Credenciais inválidas
     """
     return jsonify({"message": "Logout realizado com sucesso!"}), 200

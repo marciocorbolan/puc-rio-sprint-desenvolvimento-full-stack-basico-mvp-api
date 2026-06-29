@@ -18,8 +18,10 @@ def get_info():
           properties:
             status:
               type: string
+              description: Status da API
             mensagem:
               type: string
+              description: Mensagem de status
     """
     return jsonify({
         "status": "online",

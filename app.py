@@ -23,6 +23,8 @@ def create_app():
     # O Flasgger vai escanear todos os blueprints registrados automaticamente
     # e montar a documentação com base nas docstrings que você escrever
     swagger_template = {
+        "swagger": "2.0",
+        "schemes": ["http", "https"],
         "securityDefinitions": {
             "Bearer": {
                 "type": "apiKey",
