@@ -4,7 +4,7 @@ import os
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Nome do arquivo
-DB_NAME = 'blog.db'
+DB_NAME = 'puc-rio-sdfsb-mvp.db'
 
 # Configuração do Banco de Dados SQLite
 # O arquivo será criado na raiz do projeto
