@@ -36,20 +36,21 @@ def list_blogs():
       - name: data_cadastro_fim
         in: query
         type: string
+        description: Formato YYYY-MM-DD HH:MM:SS
       - name: com_posts
         in: query
         type: boolean
     responses:
       200:
-        description: Lista de blogs filtrada
+        description: Lista processada com sucesso
     """
     query = Blog.query
     
     # Parâmetros de filtro
     user_id = request.args.get('user_id')
     nome = request.args.get('nome')
-    inicio = request.args.get('data_cadastro_inicio')
-    fim = request.args.get('data_cadastro_fim')
+    data_cadastro_inicio = request.args.get('data_cadastro_inicio')
+    data_cadastro_fim = request.args.get('data_cadastro_fim')
     com_posts = request.args.get('com_posts', 'false').lower() == 'true'
 
     # 1. Filtros simples
@@ -59,14 +60,14 @@ def list_blogs():
         query = query.filter(Blog.nome.ilike(f'%{nome}%'))
 
     # 2. Lógica de Range para data_cadastro
-    if inicio and fim:
-        if inicio > fim:
+    if data_cadastro_inicio and data_cadastro_fim:
+        if data_cadastro_inicio > data_cadastro_fim:
             return jsonify({"message": "data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
-        query = query.filter(Blog.data_cadastro.between(inicio, fim))
-    elif inicio:
-        query = query.filter(Blog.data_cadastro == inicio)
-    elif fim:
-        query = query.filter(Blog.data_cadastro == fim)
+        query = query.filter(Blog.data_cadastro.between(data_cadastro_inicio, data_cadastro_fim))
+    elif data_cadastro_inicio:
+        query = query.filter(Blog.data_cadastro == data_cadastro_inicio)
+    elif data_cadastro_fim:
+        query = query.filter(Blog.data_cadastro == data_cadastro_fim)
 
     # 3. Filtro de blogs com posts
     if com_posts:
@@ -76,6 +77,7 @@ def list_blogs():
     
     return jsonify([{
         "id": b.id,
+        "user_id": b.user_id,
         "nome": b.nome,
         "slug": slugify(b.nome),
         "image": get_image_as_base64(b.imagem),
@@ -86,9 +88,9 @@ def list_blogs():
 #########################################################################
 
 @blog_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_blog_by_slug(id, slug):
+def get_blog(id, slug):
     """
-    Exibe os detalhes de um blog específico por ID e Slug
+    Exibe os detalhes de um blog específico por ID
     ---
     tags:
       - Blog
@@ -103,9 +105,9 @@ def get_blog_by_slug(id, slug):
         required: true
     responses:
       200:
-        description: Dados do blog encontrados
+        description: Cadastro encontrado
       404:
-        description: Blog não encontrado ou slug incorreto
+        description: Cadastro não encontrado
     """
 
     # Verifica se o ID foi informado
@@ -115,16 +117,16 @@ def get_blog_by_slug(id, slug):
     # Verifica se o blog existe
     blog = Blog.query.get(id)
     if not blog:
-        return jsonify({"message": "Blog não encontrado"}), 404
+        return jsonify({"message": "Cadastro não encontrado"}), 404
     
     # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do blog
         
     return jsonify({
         "id": blog.id,
+        "user_id": blog.user_id,
         "nome": blog.nome,
         "slug": slug,
         "image": get_image_as_base64(blog.imagem),
-        "user_id": blog.user_id,
         "data_cadastro": blog.data_cadastro
     }), 200
 
@@ -167,7 +169,7 @@ def create_blog():
     data = request.get_json()
 
     if not data.get('nome'):
-        return jsonify({"message": "Nome do blog é obrigatório"}), 400
+        return jsonify({"message": "Nome é obrigatório"}), 400
     nome = data.get('nome')
     
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
@@ -199,8 +201,6 @@ def create_blog():
             return jsonify({"message": "Erro ao salvar imagem no servidor"}), 500
         else:
             blog.imagem = caminho_imagem
-            blog.data_cadastro = data_cadastro_atualizacao_formatada
-            blog.data_atualizacao = data_cadastro_atualizacao_formatada
             db.session.commit()
     else:
         db.session.add(blog)
@@ -214,7 +214,7 @@ def create_blog():
 @token_required
 def update_blog(id):
     """
-    Edita um blog existente (apenas se for o dono)
+    Edita um blog existente (Apenas se for o dono)
     ---
     tags:
       - Blog
@@ -225,7 +225,7 @@ def update_blog(id):
         in: path
         type: integer
         required: true
-        description: ID do blog a ser editado
+        description: ID do cadastro a ser editado
       - in: body
         name: body
         schema:
@@ -233,7 +233,7 @@ def update_blog(id):
           properties:
             nome:
               type: string
-              description: Nome do blog (opcional)
+              description: Nome (opcional)
             imagem:
               type: string
               description: Base64 da imagem (opcional)
@@ -245,7 +245,7 @@ def update_blog(id):
       403:
         description: Acesso negado
       404:
-        description: Blog não encontrado
+        description: Cadastro não encontrado
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -256,7 +256,7 @@ def update_blog(id):
     
     blog = Blog.query.get(id)
     if not blog:
-        return jsonify({"message": "Blog não encontrado"}), 404
+        return jsonify({"message": "Cadastro não encontrado"}), 404
 
     # Segurança: Verifica se o usuário logado é o dono do blog
     if blog.user_id != data_token['user_id']:
