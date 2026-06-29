@@ -48,6 +48,26 @@ def update_profile():
       - Usuário
     security:
       - Bearer: []
+    parameters:
+      - in: body
+        name: body
+        schema:
+          properties:
+            nome:
+              type: string
+            email:
+              type: string
+            senha:
+              type: string
+    responses:
+      200:
+        description: Cadastro atualizado com sucesso
+      400:
+        description: Erro de validação
+      403:
+        description: Acesso negado
+      404:
+        description: Cadastro não encontrado
     """
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -63,6 +83,9 @@ def update_profile():
 
     if data.get('email'):
       user.email = data['email']
+
+    if data.get('senha'):
+      user.senha = generate_password_hash(data['senha'])
     
     db.session.commit()
     

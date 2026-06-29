@@ -22,7 +22,22 @@ def create_app():
     
     # O Flasgger vai escanear todos os blueprints registrados automaticamente
     # e montar a documentação com base nas docstrings que você escrever
-    Swagger(app)
+    swagger_template = {
+        "securityDefinitions": {
+            "Bearer": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Insira o token JWT no formato: Bearer <seu_token>"
+            }
+        },
+        "security": [
+            {
+                "Bearer": []
+            }
+        ]
+    }
+    Swagger(app, template=swagger_template)
 
     # Registro centralizado de erros
     register_error_handlers(app)
