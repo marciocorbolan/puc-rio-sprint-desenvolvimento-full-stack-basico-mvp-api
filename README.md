@@ -56,6 +56,11 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
   * Jinja2: Motor de templates do Flask. Permite gerar conteúdo HTML dinâmico. Dependência essencial do Flask;
   * MarkupSafe: Usada pelo Jinja2 para proteger o código contra ataques de injeção (XSS);
 
+* **Segurança e Comunicação**
+  * Flask-CORS: Essencial para APIs que serão consumidas por aplicações hospedadas em origens diferentes. Ele gerencia os cabeçalhos HTTP necessários para permitir requisições Cross-Origin com segurança;
+  * PyJWT: Criar, codificar e decodificar tokens JWT (JSON Web Tokens), utilizado na autenticação;
+  * itsdangerous: Biblioteca usada pelo Flask para assinar dados de forma segura (essencial para criar tokens de sessão e proteger cookies).
+
 * **Documentação**
   * Flasgger: Integra o Swagger UI ao Flask, permitindo a criação da interface interativa e processamento de arquivos .yml.
   * PyYAML: Biblioteca que permite ao Flasgger ler e interpretar o conteúdo dos seus arquivos de documentação YAML.
@@ -67,16 +72,14 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
   * greenlet: Dependência de baixo nível que o SQLAlchemy utiliza para gerenciar tarefas;
 
 * **Utilitários e Infraestrutura**
-  * PyJWT: Criar, codificar e decodificar tokens JWT (JSON Web Tokens), utilizado na autenticação;
   * Click: Interfaces de linha de comando para o Flask (ex: flask run);
-  * itsdangerous: Biblioteca usada pelo Flask para assinar dados de forma segura (essencial para criar tokens de sessão e proteger cookies).
   * importlib-metadata && zipp: São bibliotecas de utilitários que permitem ao Python ler informações sobre os pacotes instalados no sistema.
 
 ### 🧠 Fluxo de Execução Técnica
 
 A API processa requisições através de camadas integradas:
 * **Infraestrutura:** O Click inicia a aplicação e o Python gerencia as dependências via importlib-metadata e zipp.
-* **Camada Web:** O Werkzeug lida com o protocolo WSGI, o Flask gerencia a segurança de sessão com itsdangerous e o PyJWT valida a autenticação de usuários via tokens.
+* **Camada Web:** O Werkzeug lida com o protocolo WSGI, o Flask-CORS filtra a origem das requisições, o Flask gerencia a segurança de sessão com itsdangerous e o PyJWT valida a autenticação de usuários via tokens.
 * **Camada de Dados:** O Flask-SQLAlchemy utiliza o SQLAlchemy e greenlet para traduzir objetos Python em consultas SQL eficientes.
 
 ### ⚙️ Ferramentas de Desenvolvimento
@@ -109,15 +112,15 @@ source venv/bin/activate
 
 3. **Pacotes - Instalação:** Os pacotes estão versionados para garantir a compatibilidade (Ação única).
 ```bash
-pip install click==8.4.2 flasgger==0.9.7.1 Flask==3.1.3 Flask-SQLAlchemy==3.1.1 greenlet==3.5.3 importlib-metadata==9.0.0 itsdangerous==2.2.0 Jinja2==3.1.6 MarkupSafe==3.0.3 nose==1.3.7 PyJWT==2.13.0 PyYAML==6.0.2 SQLAlchemy==2.0.51 SQLAlchemy-Utils==0.42.1 Werkzeug==3.1.8 zipp==4.1.0
+pip install click==8.4.2 flasgger==0.9.7.1 Flask==3.1.3 flask-cors==6.0.5 Flask-SQLAlchemy==3.1.1 greenlet==3.5.3 importlib-metadata==9.0.0 itsdangerous==2.2.0 Jinja2==3.1.6 MarkupSafe==3.0.3 nose==1.3.7 PyJWT==2.13.0 PyYAML==6.0.2 SQLAlchemy==2.0.51 SQLAlchemy-Utils==0.42.1 Werkzeug==3.1.8 zipp==4.1.0
 ```
 
 ### 3. Acesso ao projeto 🚀
 ```bash
-flask run --host 0.0.0.0 --port 5000 --reload
+flask run --host 0.0.0.0 --port 8000 --reload
 ```
-Abra o navegador WEB e acesse: http://localhost:5000
-Documenteção: http://localhost:5000/apidocs
+Abra o navegador WEB e acesse: http://localhost:8000
+Documenteção: http://localhost:8000/apidocs
 
 ---
 

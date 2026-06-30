@@ -1,6 +1,7 @@
 # --- 1. Bibliotecas de terceiros ---
 from flask import Flask
 from flasgger import Swagger
+from flask_cors import CORS
 
 # --- 2. Módulos do seu projeto ---
 import config
@@ -16,6 +17,9 @@ from routes.comment_routes import comment_bp
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config)
+
+    # Permite que um index.html local acesse a API em qualquer porta
+    CORS(app)
 
     # Inicializa o banco de dados
     db.init_app(app)
