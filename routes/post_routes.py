@@ -1,4 +1,5 @@
 # --- Bibliotecas de Terceiros ---
+import os
 from flask import Blueprint, request, jsonify
 import jwt
 import datetime
@@ -345,7 +346,7 @@ def update_post(id):
 @token_required
 def delete_post(id):
     """
-    Remove um post existente (Apenas se o usuário for o dono do blog)
+    Remove um post existente (Apenas se for o dono)
     ---
     tags:
       - Post
@@ -376,6 +377,12 @@ def delete_post(id):
 
     if post.blog.user_id != data_token['user_id']:
         return jsonify({"message": "Acesso negado: Você não tem permissão para deletar este post"}), 403
+
+    if post.imagem and os.path.exists(post.imagem):
+        try:
+            os.remove(post.imagem)
+        except OSError as e:
+            print(f"Erro ao deletar arquivo de imagem: {e}")
 
     try:
         db.session.delete(post)

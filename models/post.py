@@ -16,7 +16,7 @@ class Post(db.Model):
     blog = db.relationship('Blog', back_populates='posts')
 
     # Relacionamento One-to-Many: Um post possui muitos comentários
-    comments = db.relationship('Comment', back_populates='post', lazy=True)
+    comments = db.relationship('Comment', back_populates='post', lazy=True, cascade="all, delete-orphan")
 
     # Relacionamento de acesso direto ao User através do Blog
     # viewonly=True garante que ele apenas leia a relação sem tentar alterar o banco

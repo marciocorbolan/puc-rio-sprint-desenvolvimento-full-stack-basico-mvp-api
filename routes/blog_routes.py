@@ -1,4 +1,5 @@
 # --- Bibliotecas de Terceiros ---
+import os
 from flask import Blueprint, request, jsonify
 import jwt
 import datetime
@@ -298,3 +299,55 @@ def update_blog(id):
     db.session.commit()
 
     return jsonify({"message": "Cadastro atualizado com sucesso"}), 200
+
+#########################################################################
+
+@blog_bp.route('/<int:id>', methods=['DELETE'])
+@token_required
+def delete_blog(id):
+    """
+    Remove um blog existente (Apenas se for o dono)
+    ---
+    tags:
+      - Blog
+    security:
+      - Bearer: []
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: ID do blog a ser deletado
+    responses:
+      200:
+        description: Cadastro removido com sucesso
+      401:
+        description: Credenciais inválidas
+      403:
+        description: Acesso negado
+      404:
+        description: Cadastro não encontrado
+    """
+    token = request.headers.get('Authorization').split(" ")[1]
+    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+    blog = Blog.query.get(id)
+    if not blog:
+        return jsonify({"message": "Cadastro não encontrado"}), 404
+
+    if blog.blog.user_id != data_token['user_id']:
+        return jsonify({"message": "Acesso negado: Você não tem permissão para deletar este blog"}), 403
+
+    if blog.imagem and os.path.exists(blog.imagem):
+        try:
+            os.remove(blog.imagem)
+        except OSError as e:
+            print(f"Erro ao deletar arquivo de imagem: {e}")
+
+    try:
+        db.session.delete(blog)
+        db.session.commit()
+        return jsonify({"message": "Cadastro removido com sucesso"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao remover o cadastro", "error": str(e)}), 500

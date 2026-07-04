@@ -17,7 +17,7 @@ class User(db.Model):
     status = db.relationship('UserStatus', back_populates='users')
 
     # Relacionamento One-to-Many: Um usuário possui muitos blogs
-    blogs = db.relationship('Blog', back_populates='user', lazy=True)
+    blogs = db.relationship('Blog', back_populates='user', lazy=True, cascade="all, delete-orphan")
 
     # Relacionamento One-to-Many: Um usuário possui muitos comentários
-    comments = db.relationship('Comment', back_populates='user', lazy=True)
+    comments = db.relationship('Comment', back_populates='user', lazy=True, cascade="all, delete-orphan")
