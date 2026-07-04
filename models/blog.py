@@ -16,4 +16,4 @@ class Blog(db.Model):
     user = db.relationship('User', back_populates='blogs')
 
     # Relacionamento One-to-Many: Um blog possui muitos posts
-    posts = db.relationship('Post', back_populates='blog', lazy=True)
+    posts = db.relationship('Post', back_populates='blog', lazy=True, cascade="all, delete-orphan")
