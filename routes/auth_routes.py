@@ -148,7 +148,10 @@ def login():
         'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
     }, SECRET_KEY, algorithm="HS256")
 
-    return jsonify({'token': token})
+    return jsonify({
+        'token': token,
+        'user_id': user.id
+    })
 
 #########################################################################
 
