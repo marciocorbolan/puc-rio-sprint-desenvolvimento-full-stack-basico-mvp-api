@@ -6,6 +6,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     blog_id = db.Column(db.Integer, db.ForeignKey('blog.id'), nullable=False)
     titulo = db.Column(db.String(256), nullable=False)
+    conteudo = db.Column(db.Text, nullable=False)
     data_cadastro = db.Column(db.String(19))
     data_atualizacao = db.Column(db.String(19))
 

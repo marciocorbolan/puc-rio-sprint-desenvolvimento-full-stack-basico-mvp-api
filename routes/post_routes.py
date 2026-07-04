@@ -90,8 +90,9 @@ def list_posts():
         "user_id": p.user_id,
         "blog_id": p.blog_id,
         "titulo": p.titulo,
+        "conteudo": p.conteudo,
         "slug": slugify(p.titulo),
-        "image": get_image_as_base64(b.imagem),
+        "image": get_image_as_base64(p.imagem),
         "data_cadastro": p.data_cadastro,
         "data_atualizacao": p.data_atualizacao
     } for p in posts]), 200
@@ -139,6 +140,7 @@ def get_post(id, slug):
         "user_id": post.user_id,
         "blog_id": post.blog_id,
         "titulo": post.titulo,
+        "conteudo": post.conteudo,
         "slug": slug,
         "image": get_image_as_base64(post.imagem),
         "data_cadastro": post.data_cadastro
@@ -172,6 +174,9 @@ def create_post():
             titulo:
               type: string
               description: título (obrigatório)
+            conteudo:
+              type: string
+              description: Conteúdo do post (obrigatório)
             imagem:
               type: string
               description: Imagem em Base64 (opcional)
@@ -203,6 +208,10 @@ def create_post():
     if not data.get('titulo'):
         return jsonify({"message": "Título é obrigatório"}), 400
     titulo = data.get('titulo')
+
+    if not data.get('conteudo'):
+        return jsonify({"message": "Conteúdo é obrigatório"}), 400
+    conteudo = data.get('conteudo')
     
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
     data_cadastro_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
@@ -210,6 +219,7 @@ def create_post():
     post = Post(
         blog_id=blog.id,
         titulo=titulo,
+        conteudo=conteudo,
         data_cadastro=data_cadastro_atualizacao_formatada,
         data_atualizacao=data_cadastro_atualizacao_formatada
     )
@@ -266,6 +276,9 @@ def update_post(id):
             titulo:
               type: string
               description: título (opcional)
+            conteudo:
+              type: string
+              description: Conteúdo do post (opcional)
             imagem:
               type: string
               description: Imagem em Base64 (opcional)
@@ -306,6 +319,9 @@ def update_post(id):
     if data.get('titulo'):
         post.titulo = data['titulo']
 
+    if data.get('conteudo'):
+        post.conteudo = data['conteudo']
+
     if data.get('imagem'):
         valido, erro, img_bytes = validate_base64_image(data['imagem'])
         if not valido:
@@ -322,3 +338,49 @@ def update_post(id):
     db.session.commit()
 
     return jsonify({"message": "Cadastro atualizado com sucesso"}), 200
+
+#########################################################################
+
+@post_bp.route('/<int:id>', methods=['DELETE'])
+@token_required
+def delete_post(id):
+    """
+    Remove um post existente (Apenas se o usuário for o dono do blog)
+    ---
+    tags:
+      - Post
+    security:
+      - Bearer: []
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: ID do post a ser deletado
+    responses:
+      200:
+        description: Cadastro removido com sucesso
+      401:
+        description: Credenciais inválidas
+      403:
+        description: Acesso negado
+      404:
+        description: Cadastro não encontrado
+    """
+    token = request.headers.get('Authorization').split(" ")[1]
+    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+    post = Post.query.get(id)
+    if not post:
+        return jsonify({"message": "Cadastro não encontrado"}), 404
+
+    if post.blog.user_id != data_token['user_id']:
+        return jsonify({"message": "Acesso negado: Você não tem permissão para deletar este post"}), 403
+
+    try:
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({"message": "Cadastro removido com sucesso"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao remover o cadastro", "error": str(e)}), 500
