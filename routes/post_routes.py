@@ -88,7 +88,7 @@ def list_posts():
     
     return jsonify([{
         "id": p.id,
-        "user_id": p.user_id,
+        "user_id": p.user.id,
         "blog_id": p.blog_id,
         "titulo": p.titulo,
         "conteudo": p.conteudo,

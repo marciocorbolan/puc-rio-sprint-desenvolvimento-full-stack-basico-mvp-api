@@ -7,6 +7,7 @@ class Post(db.Model):
     blog_id = db.Column(db.Integer, db.ForeignKey('blog.id'), nullable=False)
     titulo = db.Column(db.String(256), nullable=False)
     conteudo = db.Column(db.Text, nullable=False)
+    imagem = db.Column(db.String(256))
     data_cadastro = db.Column(db.String(19))
     data_atualizacao = db.Column(db.String(19))
 
