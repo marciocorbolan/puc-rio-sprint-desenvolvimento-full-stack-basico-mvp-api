@@ -339,7 +339,7 @@ def delete_blog(id):
     if not blog:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    if blog.blog.user_id != data_token['user_id']:
+    if blog.user_id != data_token['user_id']:
         return jsonify({"message": "Acesso negado: Você não tem permissão para deletar este blog"}), 403
 
     if blog.imagem and os.path.exists(blog.imagem):

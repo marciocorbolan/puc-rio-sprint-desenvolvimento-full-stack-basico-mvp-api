@@ -25,6 +25,6 @@ def get_info():
     """
 
     return jsonify({
-        "status": "online",
-        "mensagem": "API do Blog - MVP PUC-Rio"
+        "status": "1",
+        "mensagem": "API do Pl@g - MVP PUC-Rio"
     }), 200
