@@ -9,7 +9,6 @@ from models.blog import Blog
 from models.post import Post
 from middlewares.decorators import token_required
 from utils.file_manager import get_image_as_base64, save_image_from_base64
-from utils.text_utils import slugify
 from utils.validation import validate_base64_image
 
 
@@ -86,7 +85,6 @@ def list_blogs():
         "id": b.id,
         "user_id": b.user_id,
         "nome": b.nome,
-        "slug": slugify(b.nome),
         "image": get_image_as_base64(b.imagem),
         "user_id": b.user_id,
         "data_cadastro": b.data_cadastro
@@ -96,8 +94,7 @@ def list_blogs():
 #########################################################################
 
 @blog_bp.route('/<int:id>/', methods=['GET'])
-@blog_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_blog(id, slug=None):
+def get_blog(id):
     """
     Exibe os detalhes de um blog específico por ID
     ---
@@ -108,10 +105,6 @@ def get_blog(id, slug=None):
         in: path
         type: integer
         required: true
-      - name: slug
-        in: path
-        type: string
-        required: false
     responses:
       200:
         description: Cadastro encontrado
@@ -128,13 +121,10 @@ def get_blog(id, slug=None):
     if not blog:
         return jsonify({"message": "Cadastro não encontrado"}), 404
     
-    # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do blog
-        
     return jsonify({
         "id": blog.id,
         "user_id": blog.user_id,
         "nome": blog.nome,
-        "slug": slug,
         "image": get_image_as_base64(blog.imagem),
         "data_cadastro": blog.data_cadastro
     }), 200

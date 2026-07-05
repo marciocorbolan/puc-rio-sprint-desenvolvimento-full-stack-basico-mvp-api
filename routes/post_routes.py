@@ -11,7 +11,6 @@ from models.user import User
 from models.comment import Comment
 from middlewares.decorators import token_required
 from utils.file_manager import get_image_as_base64, save_image_from_base64
-from utils.text_utils import slugify
 from utils.validation import validate_base64_image
 
 
@@ -96,7 +95,6 @@ def list_posts():
         "blog_id": p.blog_id,
         "titulo": p.titulo,
         "conteudo": p.conteudo,
-        "slug": slugify(p.titulo),
         "image": get_image_as_base64(p.imagem),
         "data_cadastro": p.data_cadastro,
         "data_atualizacao": p.data_atualizacao
@@ -106,8 +104,7 @@ def list_posts():
 #########################################################################
 
 @post_bp.route('/<int:id>/', methods=['GET'])
-@post_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_post(id, slug=None):
+def get_post(id):
     """
     Exibe os detalhes de um post específico por ID
     ---
@@ -118,10 +115,6 @@ def get_post(id, slug=None):
         in: path
         type: integer
         required: true
-      - name: slug
-        in: path
-        type: string
-        required: false
     responses:
       200:
         description: Cadastro encontrado
@@ -138,15 +131,12 @@ def get_post(id, slug=None):
     if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do post
-        
     return jsonify({
         "id": post.id,
         "user_id": post.user.id,
         "blog_id": post.blog_id,
         "titulo": post.titulo,
         "conteudo": post.conteudo,
-        "slug": slugify(post.titulo),
         "image": get_image_as_base64(post.imagem),
         "data_cadastro": post.data_cadastro,
         "data_atualizacao": post.data_atualizacao
