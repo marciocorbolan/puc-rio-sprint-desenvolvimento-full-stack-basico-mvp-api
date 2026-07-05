@@ -1,4 +1,5 @@
 # --- Bibliotecas de Terceiros ---
+import os
 from flask import Blueprint, request, jsonify
 import jwt
 import datetime
@@ -43,6 +44,7 @@ def list_comments():
       400:
         description: Erro de validação
     """
+
     query = Comment.query
     
     # Parâmetros de filtro
@@ -51,13 +53,13 @@ def list_comments():
     data_cadastro_inicio = request.args.get('data_cadastro_inicio')
     data_cadastro_fim = request.args.get('data_cadastro_fim')
 
-    # 1. Filtros simples
+    # Filtros simples
     if user_id:
         query = query.filter(Comment.user_id == user_id)
     if post_id:
         query = query.filter(Comment.post_id == post_id)
 
-    # 2. Lógica de Range para data_cadastro
+    # Lógica de Range para data_cadastro
     if data_cadastro_inicio and data_cadastro_fim:
         if data_cadastro_inicio > data_cadastro_fim:
             return jsonify({"message": "data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
@@ -118,6 +120,7 @@ def create_comment():
       404:
         description: Cadastro não encontrado
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     
@@ -126,7 +129,6 @@ def create_comment():
     if not data.get('post_id'):
         return jsonify({"message": "post_id é obrigatório"}), 400
     
-    # Verifica se o blog existe e pertence ao usuário
     post = Post.query.get(data['post_id'])
     if not post:
         return jsonify({"message": "Post não encontrado"}), 404
@@ -149,3 +151,53 @@ def create_comment():
     db.session.commit()
 
     return jsonify({"message": "Cadastro realizado com sucesso", "id": comment.id}), 201
+
+#########################################################################
+
+@comment_bp.route('/<int:id>', methods=['DELETE'])
+@token_required
+def delete_post(id):
+    """
+    Remove um comment existente (Apenas se for o dono do post)
+    ---
+    tags:
+      - Post
+    security:
+      - Bearer: []
+    parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: ID do comment a ser deletado
+    responses:
+      200:
+        description: Cadastro removido com sucesso
+      401:
+        description: Credenciais inválidas
+      403:
+        description: Acesso negado
+      404:
+        description: Cadastro não encontrado
+    """
+
+    token = request.headers.get('Authorization').split(" ")[1]
+    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+    if not id:
+        return jsonify({"message": "ID não informado"}), 400
+
+    comment = Comment.query.get(id)
+    if not comment:
+        return jsonify({"message": "Cadastro não encontrado"}), 404
+
+    if comment.post.blog.user_id != data_token['user_id']:
+        return jsonify({"message": "Acesso negado: Somente o dono do blog/postagem pode excluir comentários."}), 403
+
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({"message": "Cadastro removido com sucesso"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao remover o cadastro", "error": str(e)}), 500

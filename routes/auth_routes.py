@@ -48,6 +48,7 @@ def register():
       400:
         description: Erro de validação
     """
+
     data = request.get_json()
     
     # Validação simples
@@ -126,6 +127,7 @@ def login():
       401:
         description: Credenciais inválidas
     """
+
     data = request.get_json()
     cpfcnpj = data.get('cpfcnpj')
     senha = data.get('senha')
@@ -173,4 +175,5 @@ def logout():
       401:
         description: Credenciais inválidas
     """
+
     return jsonify({"message": "Logout realizado com sucesso!"}), 200

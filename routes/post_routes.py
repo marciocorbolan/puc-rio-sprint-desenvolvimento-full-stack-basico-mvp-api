@@ -52,6 +52,7 @@ def list_posts():
       400:
         description: Erro de validação
     """
+
     query = Post.query
     
     # Parâmetros de filtro
@@ -62,7 +63,7 @@ def list_posts():
     data_cadastro_fim = request.args.get('data_cadastro_fim')
     com_comentarios = request.args.get('com_comentarios', 'false').lower() == 'true'
 
-    # 1. Filtros simples
+    # Filtros simples
     if user_id:
         query = query.join(Post.user).filter(User.id == user_id)
     if blog_id:
@@ -70,7 +71,7 @@ def list_posts():
     if titulo:
         query = query.filter(Post.titulo.ilike(f'%{titulo}%'))
 
-    # 2. Lógica de Range para data_cadastro
+    # Lógica de Range para data_cadastro
     if data_cadastro_inicio and data_cadastro_fim:
         if data_cadastro_inicio > data_cadastro_fim:
             return jsonify({"message": "data_cadastro_data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
@@ -80,7 +81,7 @@ def list_posts():
     elif data_cadastro_fim:
         query = query.filter(Post.data_cadastro == data_cadastro_fim)
 
-    # 3. Filtro de blogs com comentarios
+    # Filtro de blogs com comentarios
     if com_comentarios:
         query = query.join(Comment).distinct()
 
@@ -126,11 +127,9 @@ def get_post(id, slug=None):
         description: Cadastro não encontrado
     """
 
-    # Verifica se o ID foi informado
     if not id:
         return jsonify({"message": "ID não informado"}), 400
 
-    # Verifica se o post existe
     post = Post.query.get(id)
     if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
@@ -195,6 +194,7 @@ def create_post():
       500:
         description: Erro interno no servidor
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     
@@ -203,7 +203,6 @@ def create_post():
     if not data.get('blog_id'):
         return jsonify({"message": "blog_id é obrigatório"}), 400
     
-    # Verifica se o blog existe e pertence ao usuário
     blog = Blog.query.get(data['blog_id'])
     if not blog or blog.user_id != data_token['user_id']:
         return jsonify({"message": "Acesso negado ou blog inexistente"}), 403
@@ -299,10 +298,10 @@ def update_post(id):
       500:
         description: Erro interno no servidor
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
-    # Verifica se o ID foi informado
     if not id:
         return jsonify({"message": "ID não informado"}), 400
     
@@ -310,7 +309,6 @@ def update_post(id):
     if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    # Segurança: Verifica se o usuário logado é o dono do post
     if post.blog.user_id != data_token['user_id']:
         return jsonify({"message": "Acesso negado: Você não é o dono deste post"}), 403
     
@@ -370,8 +368,12 @@ def delete_post(id):
       404:
         description: Cadastro não encontrado
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+    if not id:
+        return jsonify({"message": "ID não informado"}), 400
 
     post = Post.query.get(id)
     if not post:

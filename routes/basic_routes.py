@@ -23,6 +23,7 @@ def get_info():
               type: string
               description: Mensagem de status
     """
+
     return jsonify({
         "status": "online",
         "mensagem": "API do Blog - MVP PUC-Rio"
