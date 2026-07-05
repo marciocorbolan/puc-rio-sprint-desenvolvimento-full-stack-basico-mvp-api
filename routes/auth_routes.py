@@ -14,6 +14,9 @@ from middlewares.decorators import token_required, login_limiter
 auth_bp = Blueprint('auth', __name__)
 
 
+#########################################################################
+
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """

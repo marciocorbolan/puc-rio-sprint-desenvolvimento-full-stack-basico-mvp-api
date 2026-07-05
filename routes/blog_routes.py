@@ -12,7 +12,12 @@ from utils.file_manager import get_image_as_base64, save_image_from_base64
 from utils.text_utils import slugify
 from utils.validation import validate_base64_image
 
+
 blog_bp = Blueprint('blog', __name__)
+
+
+#########################################################################
+
 
 @blog_bp.route('/', methods=['GET'])
 def list_blogs():
@@ -87,6 +92,7 @@ def list_blogs():
         "data_cadastro": b.data_cadastro
     } for b in blogs]), 200
 
+
 #########################################################################
 
 @blog_bp.route('/<int:id>/', methods=['GET'])
@@ -132,6 +138,7 @@ def get_blog(id, slug=None):
         "image": get_image_as_base64(blog.imagem),
         "data_cadastro": blog.data_cadastro
     }), 200
+
 
 #########################################################################
 
@@ -213,6 +220,7 @@ def create_blog(current_user):
 
     return jsonify({"message": "Cadastro realizado com sucesso", "id": blog.id}), 201
 
+
 #########################################################################
 
 @blog_bp.route('/<int:id>', methods=['PUT'])
@@ -291,6 +299,7 @@ def update_blog(current_user, id):
     db.session.commit()
 
     return jsonify({"message": "Cadastro atualizado com sucesso"}), 200
+
 
 #########################################################################
 

@@ -1,6 +1,12 @@
+# --- Bibliotecas de Terceiros ---
 from flask import Blueprint, jsonify
 
+
 basic_bp = Blueprint('basic', __name__)
+
+
+#########################################################################
+
 
 @basic_bp.route('/', methods=['GET'])
 @basic_bp.route('/status', methods=['GET'])

@@ -7,7 +7,12 @@ from database import db
 from models.user import User
 from middlewares.decorators import token_required
 
+
 user_bp = Blueprint('user', __name__)
+
+
+#########################################################################
+
 
 @user_bp.route('/profile', methods=['GET'])
 @token_required
@@ -37,6 +42,7 @@ def get_profile(current_user):
         "email": user.email,
         "cpfcnpj": user.cpfcnpj
     }), 200
+
 
 #########################################################################
 
