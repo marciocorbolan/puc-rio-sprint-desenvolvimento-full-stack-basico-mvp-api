@@ -90,8 +90,9 @@ def list_blogs():
 
 #########################################################################
 
+@blog_bp.route('/<int:id>/', methods=['GET'])
 @blog_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_blog(id, slug):
+def get_blog(id, slug=None):
     """
     Exibe os detalhes de um blog específico por ID
     ---
