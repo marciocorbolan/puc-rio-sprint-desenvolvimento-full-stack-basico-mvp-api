@@ -174,9 +174,9 @@ def login():
 
 @auth_bp.route('/logout', methods=['POST'])
 @token_required
-def logout():
+def logout(current_user):
     """
-    Realiza o logout (invalidação de sessão)
+    Realiza o logout (invalidação real do token)
     ---
     tags:
       - Autenticação
@@ -185,10 +185,35 @@ def logout():
     responses:
       200:
         description: Logout realizado com sucesso
-      400:
-        description: Erro de validação
       401:
         description: Credenciais inválidas
     """
 
-    return jsonify({"message": "Logout realizado com sucesso!"}), 200
+    # Se importar TokenBlacklist no topo, um loop pode ser gerado.
+    #
+    # "auth_routes.py" importa "token_required" de "decorators.py"
+    # "decorators.py" importa "TokenBlacklist"
+    # "TokenBlacklist" importa "db" de "database.py"
+    from models.token_blacklist import TokenBlacklist
+
+    try:
+        auth_header = request.headers.get('Authorization')
+        token = auth_header.split(" ")[1]
+        
+        # Decodifica apenas para pegar o jti
+        data = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+        jti = data.get('jti')
+
+        if jti:
+            blacklist_entry = TokenBlacklist(
+                jti=jti,
+                user_id=current_user.id
+            )
+            db.session.add(blacklist_entry)
+            db.session.commit()
+
+        return jsonify({"message": "Logout realizado com sucesso!"}), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao realizar logout"}), 500

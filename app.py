@@ -7,15 +7,16 @@ from flask_limiter.util import get_remote_address
 
 # --- Módulos do Projeto ---
 import config
+from middlewares.decorators import limiter
 from database import db, inicializar_banco
 from error_handlers import register_error_handlers
+from utils.cleanup import clean_expired_tokens
 from routes.auth_routes import auth_bp
 from routes.basic_routes import basic_bp
 from routes.user_routes import user_bp
 from routes.blog_routes import blog_bp
 from routes.post_routes import post_bp
 from routes.comment_routes import comment_bp
-from middlewares.decorators import limiter
 
 
 def create_app():
@@ -64,6 +65,7 @@ def create_app():
 
     # Inicializa a criação das tabelas, se o arquivo .db não existir
     with app.app_context():
+        clean_expired_tokens()
         inicializar_banco(app)
 
     return app

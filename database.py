@@ -1,7 +1,9 @@
+# --- Bibliotecas de Terceiros ---
 import os
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
 
 def inicializar_banco(app):
     # IMPORTAÇÕES PRIMEIRO (para registrar os modelos no SQLAlchemy)
@@ -10,6 +12,7 @@ def inicializar_banco(app):
     from models.blog import Blog
     from models.post import Post
     from models.comment import Comment
+    from models.token_blacklist import TokenBlacklist
 
     # Pega o caminho do banco diretamente da configuração do app
     db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')

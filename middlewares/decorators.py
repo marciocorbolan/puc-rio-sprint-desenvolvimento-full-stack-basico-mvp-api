@@ -8,6 +8,7 @@ from flask_limiter.util import get_remote_address
 # --- Módulos do Projeto ---
 from config import SECRET_KEY
 from models.user import User
+from models.token_blacklist import TokenBlacklist
 
 
 # ====================== RATE LIMITER ======================
@@ -43,6 +44,11 @@ def token_required(f):
             token = partes[1]
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             user_id = data['user_id']
+            jti = data.get('jti')
+
+            # Verifica se o token está na blacklist
+            if not jti or TokenBlacklist.query.filter_by(jti=jti).first():
+                return jsonify({'message': 'Token inválido (logout realizado)'}), 401
 
             # Carrega o usuário do banco
             current_user = User.query.get(user_id)
