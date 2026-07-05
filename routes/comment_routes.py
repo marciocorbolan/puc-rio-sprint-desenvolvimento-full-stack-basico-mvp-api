@@ -24,10 +24,6 @@ def list_comments():
     tags:
       - Comment
     parameters:
-      - name: user_id
-        in: query
-        type: integer
-        description: ID do usuário (opcional, mas necessário se post_id não for informado)
       - name: post_id
         in: query
         type: integer
@@ -50,17 +46,14 @@ def list_comments():
     query = Comment.query
     
     # Parâmetros de filtro
-    user_id = request.args.get('user_id')
     post_id = request.args.get('post_id')
     data_cadastro_inicio = request.args.get('data_cadastro_inicio')
     data_cadastro_fim = request.args.get('data_cadastro_fim')
 
-    if not user_id and not post_id:
-        return jsonify({"message": "user_id ou post_id devem ser informados"}), 400
+    if not post_id:
+        return jsonify({"message": "post_id é obrigatório"}), 400
 
     # Filtros simples
-    if user_id:
-        query = query.filter(Comment.user_id == user_id)
     if post_id:
         query = query.filter(Comment.post_id == post_id)
 
