@@ -9,6 +9,7 @@ class TokenBlacklist(db.Model):
     jti = db.Column(db.String(36), unique=True, nullable=False)  # JWT ID
     user_id = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    used = db.Column(db.Boolean, default=False) # Proteção contra reutilização de tokens
     
     def __repr__(self):
         return f'<TokenBlacklist {self.jti}>'

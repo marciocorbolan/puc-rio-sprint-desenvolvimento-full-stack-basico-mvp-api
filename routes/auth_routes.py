@@ -207,7 +207,8 @@ def logout(current_user):
         if jti:
             blacklist_entry = TokenBlacklist(
                 jti=jti,
-                user_id=current_user.id
+                user_id=current_user.id,
+                used=True # Marca como usado
             )
             db.session.add(blacklist_entry)
             db.session.commit()
