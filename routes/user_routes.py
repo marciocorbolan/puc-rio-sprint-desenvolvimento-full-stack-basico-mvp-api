@@ -30,6 +30,7 @@ def get_profile():
       404:
         description: Cadastro não encontrado
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     
@@ -79,6 +80,7 @@ def update_profile():
       404:
         description: Cadastro não encontrado
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     

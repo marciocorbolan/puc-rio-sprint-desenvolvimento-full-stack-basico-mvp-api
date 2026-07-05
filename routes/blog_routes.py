@@ -47,6 +47,7 @@ def list_blogs():
       400:
         description: Erro de validação
     """
+
     query = Blog.query
     
     # Parâmetros de filtro
@@ -56,13 +57,13 @@ def list_blogs():
     data_cadastro_fim = request.args.get('data_cadastro_fim')
     com_posts = request.args.get('com_posts', 'false').lower() == 'true'
 
-    # 1. Filtros simples
+    # Filtros simples
     if user_id:
         query = query.filter(Blog.user_id == user_id)
     if nome:
         query = query.filter(Blog.nome.ilike(f'%{nome}%'))
 
-    # 2. Lógica de Range para data_cadastro
+    # Lógica de Range para data_cadastro
     if data_cadastro_inicio and data_cadastro_fim:
         if data_cadastro_inicio > data_cadastro_fim:
             return jsonify({"message": "data_cadastro_inicio deve ser menor que data_cadastro_fim"}), 400
@@ -72,7 +73,7 @@ def list_blogs():
     elif data_cadastro_fim:
         query = query.filter(Blog.data_cadastro == data_cadastro_fim)
 
-    # 3. Filtro de blogs com posts
+    # Filtro de blogs com posts
     if com_posts:
         query = query.join(Post).distinct()
 
@@ -116,11 +117,9 @@ def get_blog(id, slug=None):
         description: Cadastro não encontrado
     """
 
-    # Verifica se o ID foi informado
     if not id:
         return jsonify({"message": "ID não informado"}), 400
 
-    # Verifica se o blog existe
     blog = Blog.query.get(id)
     if not blog:
         return jsonify({"message": "Cadastro não encontrado"}), 404
@@ -173,6 +172,7 @@ def create_blog():
       500:
         description: Erro interno no servidor
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     
@@ -261,10 +261,10 @@ def update_blog(id):
       500:
         description: Erro interno no servidor
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
 
-    # Verifica se o ID foi informado
     if not id:
         return jsonify({"message": "ID não informado"}), 400
     
@@ -272,7 +272,6 @@ def update_blog(id):
     if not blog:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    # Segurança: Verifica se o usuário logado é o dono do blog
     if blog.user_id != data_token['user_id']:
         return jsonify({"message": "Acesso negado: Você não é o dono deste blog"}), 403
     
@@ -329,8 +328,12 @@ def delete_blog(id):
       404:
         description: Cadastro não encontrado
     """
+
     token = request.headers.get('Authorization').split(" ")[1]
     data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+    if not id:
+        return jsonify({"message": "ID não informado"}), 400
 
     blog = Blog.query.get(id)
     if not blog:
