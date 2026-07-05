@@ -1,18 +1,12 @@
 # --- Bibliotecas de Terceiros ---
-import os
 from flask import Blueprint, request, jsonify
-import jwt
 import datetime
 
 # --- Módulos do Projeto ---
-from config import SECRET_KEY
 from database import db
 from models.comment import Comment
 from models.post import Post
 from middlewares.decorators import token_required
-from utils.file_manager import get_image_as_base64, save_image_from_base64
-from utils.text_utils import slugify
-from utils.validation import validate_base64_image
 
 comment_bp = Blueprint('comment', __name__)
 
@@ -82,7 +76,7 @@ def list_comments():
 
 @comment_bp.route('/', methods=['POST'])
 @token_required
-def create_comment():
+def create_comment(current_user):
     """
     Cria um novo comment para o usuário logado
     ---
@@ -120,9 +114,6 @@ def create_comment():
         description: Cadastro não encontrado
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    
     data = request.get_json()
 
     if not data.get('post_id'):
@@ -140,7 +131,7 @@ def create_comment():
     data_cadastro_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
 
     comment = Comment(
-        user_id=data_token['user_id'],
+        user_id=current_user.id,
         post_id=post.id,
         texto=texto,
         data_cadastro=data_cadastro_atualizacao_formatada,
@@ -155,7 +146,7 @@ def create_comment():
 
 @comment_bp.route('/<int:id>', methods=['DELETE'])
 @token_required
-def delete_post(id):
+def delete_comment(current_user, id):
     """
     Remove um comment existente (Apenas se for o dono do post)
     ---
@@ -180,9 +171,6 @@ def delete_post(id):
         description: Cadastro não encontrado
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
     if not id:
         return jsonify({"message": "ID não informado"}), 400
 
@@ -190,7 +178,7 @@ def delete_post(id):
     if not comment:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    if comment.post.blog.user_id != data_token['user_id']:
+    if comment.post.blog.user_id != current_user.id:
         return jsonify({"message": "Acesso negado: Somente o dono do blog/postagem pode excluir comentários."}), 403
 
     try:
