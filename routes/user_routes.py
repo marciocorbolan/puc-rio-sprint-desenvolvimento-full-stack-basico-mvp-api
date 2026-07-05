@@ -1,6 +1,7 @@
 # --- Bibliotecas de Terceiros ---
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash
+import datetime
 
 # --- Módulos do Projeto ---
 from database import db
@@ -18,7 +19,7 @@ user_bp = Blueprint('user', __name__)
 @token_required
 def get_profile(current_user):
     """
-    Exibe os dados do usuário logado
+    Retorna os dados do usuário logado
     ---
     tags:
       - Usuário
@@ -26,7 +27,20 @@ def get_profile(current_user):
       - Bearer: []
     responses:
       200:
-        description: Cadastro encontrado
+        description: Dados do cadastro
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            email:
+              type: string
+            cpfcnpj:
+              type: string
+            data_cadastro:
+              type: string
+            data_atualizacao:
+              type: string
       401:
         description: Credenciais inválidas
       404:
@@ -40,7 +54,9 @@ def get_profile(current_user):
     return jsonify({
         "nome": user.nome,
         "email": user.email,
-        "cpfcnpj": user.cpfcnpj
+        "cpfcnpj": user.cpfcnpj,
+        "data_cadastro": user.data_cadastro,
+        "data_atualizacao": user.data_atualizacao
     }), 200
 
 
@@ -50,7 +66,7 @@ def get_profile(current_user):
 @token_required
 def update_profile(current_user):
     """
-    Altera os dados do usuário logado
+    Atualiza os dados do usuário logado
     ---
     tags:
       - Usuário
@@ -60,10 +76,11 @@ def update_profile(current_user):
       - in: body
         name: body
         schema:
+          type: object
           properties:
             nome:
               type: string
-              description: Nome (opcional)
+              description: Nome completo (opcional)
             email:
               type: string
               description: Email (opcional)
@@ -84,6 +101,9 @@ def update_profile(current_user):
     user = User.query.get(current_user.id)
     if not user:
         return jsonify({"message": "Cadastro não encontrado"}), 404
+    
+    agora_utc = datetime.datetime.now(datetime.timezone.utc)
+    data_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
         
     data = request.get_json()
 
@@ -95,6 +115,8 @@ def update_profile(current_user):
 
     if data.get('senha'):
       user.senha = generate_password_hash(data['senha'])
+
+    user.data_atualizacao = data_atualizacao_formatada
     
     db.session.commit()
     

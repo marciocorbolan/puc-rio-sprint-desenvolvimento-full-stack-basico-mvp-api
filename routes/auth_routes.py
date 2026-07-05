@@ -62,13 +62,14 @@ def generate_refresh_token(user):
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """
-    Cadastra um novo usuário
+    Cadastra um novo usuário no sistema
     ---
     tags:
       - Autenticação
     parameters:
       - in: body
         name: body
+        required: true
         schema:
           type: object
           required:
@@ -79,19 +80,19 @@ def register():
           properties:
             cpfcnpj:
               type: string
-              description: CPF ou CNPJ (obrigatório)
+              description: CPF ou CNPJ (obrigatório e único)
             nome:
               type: string
-              description: Nome (obrigatório)
+              description: Nome completo do usuário
             email:
               type: string
-              description: Email (obrigatório)
+              description: Endereço de email válido (único)
             senha:
               type: string
-              description: Senha (obrigatório)
+              description: Senha para acesso (mín. 6 caracteres)
     responses:
       201:
-        description: Cadastro criado com sucesso
+        description: Cadastro realizado com sucesso
       400:
         description: Erro de validação
     """
@@ -127,6 +128,9 @@ def register():
     user = User.query.filter_by(email=email).first()
     if user:
         return jsonify({"message": "Email em uso"}), 400
+    
+    agora_utc = datetime.datetime.now(datetime.timezone.utc)
+    data_cadastro_atualizacao_formatada = agora_utc.strftime('%Y-%m-%d %H:%M:%S')
 
     # Criar o objeto usuário
     novo_usuario = User(
@@ -134,13 +138,15 @@ def register():
         nome=nome,
         email=email,
         senha=generate_password_hash(senha),
-        status_id=1
+        status_id=1,
+        data_cadastro=data_cadastro_atualizacao_formatada,
+        data_atualizacao=data_cadastro_atualizacao_formatada
     )
     
     db.session.add(novo_usuario)
     db.session.commit()
     
-    return jsonify({"message": "Cadastro criado com sucesso"}), 201
+    return jsonify({"message": "Cadastro realizado com sucesso"}), 201
 
 
 #########################################################################
@@ -149,13 +155,14 @@ def register():
 @login_limiter
 def login():
     """
-    Realiza o login e retorna access token + refresh token JWT
+    Realiza login e retorna tokens JWT (Access + Refresh)
     ---
     tags:
       - Autenticação
     parameters:
       - in: body
         name: body
+        required: true
         schema:
           type: object
           required:
@@ -164,13 +171,28 @@ def login():
           properties:
             cpfcnpj:
               type: string
-              description: CPF ou CNPJ (obrigatório)
+              description: CPF ou CNPJ cadastrado
             senha:
               type: string
-              description: Senha (obrigatório)
+              description: Senha do usuário
     responses:
       200:
-        description: Tokens JWT retornados (access + refresh)
+        description: Login realizado com sucesso
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: Token de acesso (válido por 24h)
+            refresh_token:
+              type: string
+              description: Token para renovar acesso (válido por 7 dias)
+            user_id:
+              type: integer
+            access_expires_in:
+              type: string
+            refresh_expires_in:
+              type: string
       400:
         description: Erro de validação
       401:
@@ -207,11 +229,62 @@ def login():
 
 #########################################################################
 
+@auth_bp.route('/refresh', methods=['POST'])
+@refresh_token_required
+def refresh(current_user):
+    """
+    Renova o Access Token usando Refresh Token (com rotação de token)
+    ---
+    tags:
+      - Autenticação
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Novos tokens gerados com sucesso
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+            user_id:
+              type: integer
+            expires_in:
+              type: string
+      401:
+        description: Credenciais inválidas (refresh token inválido, expirado ou já utilizado)
+      500:
+        description: Erro interno no servidor (ex.: gerar token)
+    """
+
+    try:
+        # Gera novo access token
+        access_token, access_jti, _ = generate_access_token(current_user)
+        
+        # Token Rotation: Gera novo refresh token (melhor prática de segurança)
+        new_refresh_token, new_refresh_jti, _ = generate_refresh_token(current_user)
+        
+        return jsonify({
+            'access_token': access_token,
+            'refresh_token': new_refresh_token,
+            'user_id': current_user.id,
+            'expires_in': f"{config.JWT_EXPIRATION_HOURS} horas"
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao gerar novo token"}), 500
+
+
+#########################################################################
+
 @auth_bp.route('/logout', methods=['POST'])
 @token_required
 def logout(current_user):
     """
-    Realiza o logout (invalidação real do token)
+    Realiza logout invalidando o token atual
     ---
     tags:
       - Autenticação
@@ -222,6 +295,8 @@ def logout(current_user):
         description: Logout realizado com sucesso
       401:
         description: Credenciais inválidas
+      500:
+        description: Erro interno no servidor (ex.: logout)
     """
 
     # Se importar TokenBlacklist no topo, um loop pode ser gerado.
@@ -253,40 +328,3 @@ def logout(current_user):
     except Exception:
         db.session.rollback()
         return jsonify({"message": "Erro ao realizar logout"}), 500
-
-
-#########################################################################
-
-@auth_bp.route('/refresh', methods=['POST'])
-@refresh_token_required
-def refresh(current_user):
-    """
-    Gera um novo access token (e novo refresh token) usando refresh token atual
-    ---
-    tags:
-      - Autenticação
-    security:
-      - Bearer: []
-    responses:
-      200:
-        description: Novos tokens gerados com sucesso
-      401:
-        description: Refresh token inválido ou expirado
-    """
-    try:
-        # Gera novo access token
-        access_token, access_jti, _ = generate_access_token(current_user)
-        
-        # Token Rotation: Gera novo refresh token (melhor prática de segurança)
-        new_refresh_token, new_refresh_jti, _ = generate_refresh_token(current_user)
-        
-        return jsonify({
-            'access_token': access_token,
-            'refresh_token': new_refresh_token,
-            'user_id': current_user.id,
-            'expires_in': f"{config.JWT_EXPIRATION_HOURS} horas"
-        }), 200
-
-    except Exception:
-        db.session.rollback()
-        return jsonify({"message": "Erro ao gerar novo token"}), 500

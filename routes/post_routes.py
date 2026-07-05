@@ -23,7 +23,7 @@ post_bp = Blueprint('post', __name__)
 @post_bp.route('/', methods=['GET'])
 def list_posts():
     """
-    Lista posts com filtros dinâmicos
+    Lista postagens cadastradas (Suporte a filtros)
     ---
     tags:
       - Post
@@ -31,28 +31,53 @@ def list_posts():
       - name: user_id
         in: query
         type: integer
+        description: Filtrar por ID do autor
       - name: blog_id
         in: query
         type: integer
+        description: Filtrar por ID do blog
       - name: titulo
         in: query
         type: string
+        description: Busca por título (parcial)
       - name: data_cadastro_inicio
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data inicial (YYYY-MM-DD HH:MM:SS)
       - name: data_cadastro_fim
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data final (YYYY-MM-DD HH:MM:SS)
       - name: com_comentarios
         in: query
         type: boolean
+        description: Retornar apenas posts com comentários
     responses:
       200:
         description: Lista processada com sucesso
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              user_id:
+                type: integer
+              blog_id:
+                type: integer
+              titulo:
+                type: string
+              conteudo:
+                type: string
+              image:
+                type: string
+              data_cadastro:
+                type: string
+              data_atualizacao:
+                type: string
       400:
-        description: Erro de validação
+        description: Parâmetros inválidos
     """
 
     query = Post.query
@@ -106,7 +131,7 @@ def list_posts():
 @post_bp.route('/<int:id>/', methods=['GET'])
 def get_post(id):
     """
-    Exibe os detalhes de um post específico por ID
+    Retorna detalhes de uma postagem
     ---
     tags:
       - Post
@@ -115,11 +140,31 @@ def get_post(id):
         in: path
         type: integer
         required: true
+        description: ID do post
     responses:
       200:
-        description: Cadastro encontrado
+        description: Dados do cadastro
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            user_id:
+              type: integer
+            blog_id:
+              type: integer
+            titulo:
+              type: string
+            conteudo:
+              type: string
+            image:
+              type: string
+            data_cadastro:
+              type: string
+            data_atualizacao:
+              type: string
       400:
-        description: Erro de validação
+        description: Parâmetros inválidos
       404:
         description: Cadastro não encontrado
     """
@@ -149,7 +194,7 @@ def get_post(id):
 @token_required
 def create_post(current_user):
     """
-    Cria um novo post vinculado a um blog do usuário logado
+    Cria uma nova postagem vinculada a um blog do usuário logado
     ---
     tags:
       - Post
@@ -164,22 +209,30 @@ def create_post(current_user):
           required:
             - blog_id
             - titulo
+            - conteudo
           properties:
             blog_id:
               type: integer
               description: ID do blog (obrigatório)
             titulo:
               type: string
-              description: título (obrigatório)
+              description: Título do post (obrigatório)
             conteudo:
               type: string
               description: Conteúdo do post (obrigatório)
             imagem:
               type: string
-              description: Imagem em Base64 (opcional)
+              description: Imagem no formato Base64 (opcional)
     responses:
       201:
-        description: Cadastro criado com sucesso
+        description: Cadastro realizado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            id:
+              type: integer
       400:
         description: Erro de validação
       401:
@@ -187,7 +240,7 @@ def create_post(current_user):
       403:
         description: Acesso negado
       500:
-        description: Erro interno no servidor
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     data = request.get_json()
@@ -251,7 +304,7 @@ def create_post(current_user):
 @token_required
 def update_post(current_user, id):
     """
-    Edita um post existente (Apenas se for o dono)
+    Atualiza os dados de uma postagem (Apenas se for o dono do blog)
     ---
     tags:
       - Post
@@ -270,13 +323,13 @@ def update_post(current_user, id):
           properties:
             titulo:
               type: string
-              description: título (opcional)
+              description: Título (opcional)
             conteudo:
               type: string
               description: Conteúdo do post (opcional)
             imagem:
               type: string
-              description: Imagem em Base64 (opcional)
+              description: Imagem no formato Base64 (opcional)
     responses:
       200:
         description: Cadastro atualizado com sucesso
@@ -289,7 +342,7 @@ def update_post(current_user, id):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     if not id:
@@ -337,7 +390,7 @@ def update_post(current_user, id):
 @token_required
 def delete_post(current_user, id):
     """
-    Remove um post existente (Apenas se for o dono)
+    Remove uma postagem (Apenas se for o dono do blog)
     ---
     tags:
       - Post
@@ -348,7 +401,7 @@ def delete_post(current_user, id):
         in: path
         type: integer
         required: true
-        description: ID do post a ser deletado
+        description: ID do cadastro a ser deletado
     responses:
       200:
         description: Cadastro removido com sucesso
@@ -358,6 +411,8 @@ def delete_post(current_user, id):
         description: Acesso negado
       404:
         description: Cadastro não encontrado
+      500:
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     if not id:
