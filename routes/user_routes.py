@@ -1,11 +1,8 @@
 # --- Bibliotecas de Terceiros ---
 from flask import Blueprint, request, jsonify
-import jwt
-import datetime
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash
 
 # --- Módulos do Projeto ---
-from config import SECRET_KEY
 from database import db
 from models.user import User
 from middlewares.decorators import token_required
@@ -14,7 +11,7 @@ user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/profile', methods=['GET'])
 @token_required
-def get_profile():
+def get_profile(current_user):
     """
     Exibe os dados do usuário logado
     ---
@@ -31,10 +28,7 @@ def get_profile():
         description: Cadastro não encontrado
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    
-    user = User.query.get(data['user_id'])
+    user = User.query.get(current_user.id)
     if not user:
         return jsonify({"message": "Cadastro não encontrado"}), 404
         
@@ -48,7 +42,7 @@ def get_profile():
 
 @user_bp.route('/profile', methods=['PUT'])
 @token_required
-def update_profile():
+def update_profile(current_user):
     """
     Altera os dados do usuário logado
     ---
@@ -81,10 +75,7 @@ def update_profile():
         description: Cadastro não encontrado
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    
-    user = User.query.get(data_token['user_id'])
+    user = User.query.get(current_user.id)
     if not user:
         return jsonify({"message": "Cadastro não encontrado"}), 404
         

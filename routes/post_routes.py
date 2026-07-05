@@ -1,11 +1,9 @@
 # --- Bibliotecas de Terceiros ---
 import os
 from flask import Blueprint, request, jsonify
-import jwt
 import datetime
 
 # --- Módulos do Projeto ---
-from config import SECRET_KEY
 from database import db
 from models.blog import Blog
 from models.post import Post
@@ -152,7 +150,7 @@ def get_post(id, slug=None):
 
 @post_bp.route('/', methods=['POST'])
 @token_required
-def create_post():
+def create_post(current_user):
     """
     Cria um novo post vinculado a um blog do usuário logado
     ---
@@ -195,16 +193,13 @@ def create_post():
         description: Erro interno no servidor
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    
     data = request.get_json()
 
     if not data.get('blog_id'):
         return jsonify({"message": "blog_id é obrigatório"}), 400
     
     blog = Blog.query.get(data['blog_id'])
-    if not blog or blog.user_id != data_token['user_id']:
+    if not blog or blog.user_id != current_user.id:
         return jsonify({"message": "Acesso negado ou blog inexistente"}), 403
 
     if not data.get('titulo'):
@@ -256,7 +251,7 @@ def create_post():
 
 @post_bp.route('/<int:id>', methods=['PUT'])
 @token_required
-def update_post(id):
+def update_post(current_user, id):
     """
     Edita um post existente (Apenas se for o dono)
     ---
@@ -299,9 +294,6 @@ def update_post(id):
         description: Erro interno no servidor
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
     if not id:
         return jsonify({"message": "ID não informado"}), 400
     
@@ -309,7 +301,7 @@ def update_post(id):
     if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    if post.blog.user_id != data_token['user_id']:
+    if post.blog.user_id != current_user.id:
         return jsonify({"message": "Acesso negado: Você não é o dono deste post"}), 403
     
     agora_utc = datetime.datetime.now(datetime.timezone.utc)
@@ -344,7 +336,7 @@ def update_post(id):
 
 @post_bp.route('/<int:id>', methods=['DELETE'])
 @token_required
-def delete_post(id):
+def delete_post(current_user, id):
     """
     Remove um post existente (Apenas se for o dono)
     ---
@@ -369,9 +361,6 @@ def delete_post(id):
         description: Cadastro não encontrado
     """
 
-    token = request.headers.get('Authorization').split(" ")[1]
-    data_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
     if not id:
         return jsonify({"message": "ID não informado"}), 400
 
@@ -379,7 +368,7 @@ def delete_post(id):
     if not post:
         return jsonify({"message": "Cadastro não encontrado"}), 404
 
-    if post.blog.user_id != data_token['user_id']:
+    if post.blog.user_id != current_user.id:
         return jsonify({"message": "Acesso negado: Você não tem permissão para deletar este post"}), 403
 
     if post.imagem and os.path.exists(post.imagem):
