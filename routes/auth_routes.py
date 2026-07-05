@@ -147,6 +147,9 @@ def login():
     # Criação do token
     token = jwt.encode({
         'user_id': user.id,
+        'cpfcnpj': user.cpfcnpj,
+        'email': user.email,
+        'nome': user.nome,
         'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
     }, SECRET_KEY, algorithm="HS256")
 
