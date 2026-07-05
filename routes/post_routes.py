@@ -100,8 +100,9 @@ def list_posts():
 
 #########################################################################
 
+@post_bp.route('/<int:id>/', methods=['GET'])
 @post_bp.route('/<int:id>/<slug>', methods=['GET'])
-def get_post(id, slug):
+def get_post(id, slug=None):
     """
     Exibe os detalhes de um post específico por ID
     ---
@@ -138,13 +139,14 @@ def get_post(id, slug):
         
     return jsonify({
         "id": post.id,
-        "user_id": post.user_id,
+        "user_id": post.user.id,
         "blog_id": post.blog_id,
         "titulo": post.titulo,
         "conteudo": post.conteudo,
-        "slug": slug,
+        "slug": slugify(post.titulo),
         "image": get_image_as_base64(post.imagem),
-        "data_cadastro": post.data_cadastro
+        "data_cadastro": post.data_cadastro,
+        "data_atualizacao": post.data_atualizacao
     }), 200
 
 #########################################################################
