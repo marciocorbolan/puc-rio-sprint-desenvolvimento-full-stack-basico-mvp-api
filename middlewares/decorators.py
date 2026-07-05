@@ -2,10 +2,25 @@
 from functools import wraps
 from flask import request, jsonify
 import jwt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # --- Módulos do Projeto ---
 from config import SECRET_KEY
 from models.user import User
+
+
+# ====================== RATE LIMITER ======================
+# Configuração global do Rate Limiter
+limiter = Limiter(
+    key_func=get_remote_address,      # Usa o IP do cliente
+    default_limits=["100 per day"]    # Limite padrão para todas as rotas
+)
+
+# Rate Limit específico e mais restrito para a rota de Login
+# Proteção contra brute force
+login_limiter = limiter.limit("5 per minute", methods=["POST"])
+# ========================================================
 
 
 def token_required(f):
