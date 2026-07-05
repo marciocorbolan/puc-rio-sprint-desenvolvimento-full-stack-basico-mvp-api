@@ -161,7 +161,7 @@ def delete_post(id):
     Remove um comment existente (Apenas se for o dono do post)
     ---
     tags:
-      - Post
+      - Comment
     security:
       - Bearer: []
     parameters:
