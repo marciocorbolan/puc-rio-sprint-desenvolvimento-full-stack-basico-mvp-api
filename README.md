@@ -42,8 +42,8 @@ puc-rio-sprint-desenvolvimento-full-stack-basico-mvp-api/
 │   └── user_routes.py    # Endpoints de gerenciamento de perfil do usuário
 ├── utils/                # Conjunto de funções auxiliares e lógica de suporte
 │   ├── __init__.py
+│   ├── cleanup.py        # Rotina de limpeza automática de tokens expirados da blacklist
 │   ├── file_manager.py   # Lógica para salvamento e leitura de arquivos em disco
-│   ├── text_utils.py     # Funções auxiliares para manipulação de texto (ex: slugify)
 │   └── validation.py     # Lógica de validação de dados de entrada e imagens (Base64)
 └── uploads/              # Diretório de armazenamento físico de ativos (imagens)
 ```
