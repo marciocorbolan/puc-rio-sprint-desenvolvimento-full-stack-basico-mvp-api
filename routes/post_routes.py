@@ -65,7 +65,7 @@ def list_posts():
 
     # Filtros simples
     if user_id:
-        query = query.join(Post.user).filter(User.id == user_id)
+        query = query.join(Blog).join(User).filter(User.id == user_id)
     if blog_id:
         query = query.filter(Post.blog_id == blog_id)
     if titulo:
