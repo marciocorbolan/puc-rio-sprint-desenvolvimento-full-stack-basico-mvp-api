@@ -222,7 +222,7 @@ def create_post(current_user):
               description: Conteúdo do post (obrigatório)
             imagem:
               type: string
-              description: Imagem no formato Base64 (opcional)
+              description: Imagem no formato Base64 (opcional, tamanho máximo 8MB)
     responses:
       201:
         description: Cadastro realizado com sucesso

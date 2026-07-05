@@ -192,7 +192,7 @@ def create_blog(current_user):
               description: Nome do blog (obrigatório)
             imagem:
               type: string
-              description: Imagem no formato Base64 (opcional)
+              description: Imagem no formato Base64 (opcional, tamanho máximo 8MB)
     responses:
       201:
         description: Cadastro realizado com sucesso
@@ -284,7 +284,7 @@ def update_blog(current_user, id):
               description: Nome do blog (opcional)
             imagem:
               type: string
-              description: Imagem no formato Base64 (opcional)
+              description: Imagem no formato Base64 (opcional, tamanho máximo 8MB)
     responses:
       200:
         description: Cadastro atualizado com sucesso
