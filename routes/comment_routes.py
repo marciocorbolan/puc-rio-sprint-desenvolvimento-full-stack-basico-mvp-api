@@ -79,48 +79,6 @@ def list_comments():
 
 #########################################################################
 
-@comment_bp.route('/<int:id>', methods=['GET'])
-def get_comment(id):
-    """
-    Exibe os detalhes de um comment específico por ID
-    ---
-    tags:
-      - Comment
-    parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-    responses:
-      200:
-        description: Cadastro encontrado
-      400:
-        description: Erro de validação
-      404:
-        description: Cadastro não encontrado
-    """
-
-    # Verifica se o ID foi informado
-    if not id:
-        return jsonify({"message": "ID não informado"}), 400
-
-    # Verifica se o comment existe
-    comment = Comment.query.get(id)
-    if not comment:
-        return jsonify({"message": "Cadastro não encontrado"}), 404
-    
-    # Poderia validar o slug aqui, mas para simplificação, vamos apenas retornar os dados do comment
-        
-    return jsonify({
-        "id": comment.id,
-        "user_id": comment.user_id,
-        "post_id": comment.post_id,
-        "texto": comment.texto,
-        "data_cadastro": comment.data_cadastro
-    }), 200
-
-#########################################################################
-
 @comment_bp.route('/', methods=['POST'])
 @token_required
 def create_comment():
