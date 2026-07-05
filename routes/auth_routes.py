@@ -256,7 +256,7 @@ def refresh(current_user):
       401:
         description: Credenciais inválidas (refresh token inválido, expirado ou já utilizado)
       500:
-        description: Erro interno no servidor (ex.: gerar token)
+        description: Erro interno no servidor (gerar token)
     """
 
     try:
@@ -296,7 +296,7 @@ def logout(current_user):
       401:
         description: Credenciais inválidas
       500:
-        description: Erro interno no servidor (ex.: logout)
+        description: Erro interno no servidor (logout)
     """
 
     # Se importar TokenBlacklist no topo, um loop pode ser gerado.

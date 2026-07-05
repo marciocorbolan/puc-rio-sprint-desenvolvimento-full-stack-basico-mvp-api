@@ -65,8 +65,11 @@ def create_app():
 
     # Inicializa a criação das tabelas, se o arquivo .db não existir
     with app.app_context():
-        clean_expired_tokens()
         inicializar_banco(app)
+        try:
+            clean_expired_tokens()
+        except Exception as e:
+            print(f"Warning: Cleanup falhou: {e}")
 
     return app
 

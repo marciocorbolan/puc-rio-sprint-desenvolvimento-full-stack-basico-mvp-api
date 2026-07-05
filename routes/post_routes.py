@@ -128,7 +128,7 @@ def list_posts():
 
 #########################################################################
 
-@post_bp.route('/<int:id>/', methods=['GET'])
+@post_bp.route('/<int:id>', methods=['GET'])
 def get_post(id):
     """
     Retorna detalhes de uma postagem
@@ -240,7 +240,7 @@ def create_post(current_user):
       403:
         description: Acesso negado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     data = request.get_json()
@@ -342,7 +342,7 @@ def update_post(current_user, id):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     if not id:
@@ -412,7 +412,7 @@ def delete_post(current_user, id):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     if not id:

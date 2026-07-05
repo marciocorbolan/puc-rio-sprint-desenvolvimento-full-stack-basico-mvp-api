@@ -114,7 +114,7 @@ def list_blogs():
 
 #########################################################################
 
-@blog_bp.route('/<int:id>/', methods=['GET'])
+@blog_bp.route('/<int:id>', methods=['GET'])
 def get_blog(id):
     """
     Retorna detalhes de um blog
@@ -210,7 +210,7 @@ def create_blog(current_user):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     data = request.get_json()
@@ -297,7 +297,7 @@ def update_blog(current_user, id):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     if not id:
@@ -364,7 +364,7 @@ def delete_blog(current_user, id):
       404:
         description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor (ex.: imagem)
+        description: Erro interno no servidor (imagem)
     """
 
     if not id:
