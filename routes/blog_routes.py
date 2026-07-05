@@ -21,7 +21,7 @@ blog_bp = Blueprint('blog', __name__)
 @blog_bp.route('/', methods=['GET'])
 def list_blogs():
     """
-    Lista blogs com filtros dinâmicos
+    Lista os blogs cadastrados (Suporte a filtros)
     ---
     tags:
       - Blog
@@ -29,25 +29,45 @@ def list_blogs():
       - name: user_id
         in: query
         type: integer
+        description: Filtrar por ID do dono
       - name: nome
         in: query
         type: string
+        description: Busca por nome (parcial)
       - name: data_cadastro_inicio
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data inicial (YYYY-MM-DD HH:MM:SS)
       - name: data_cadastro_fim
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data final (YYYY-MM-DD HH:MM:SS)
       - name: com_posts
         in: query
         type: boolean
+        description: Retornar apenas blogs que possuem posts
     responses:
       200:
         description: Lista processada com sucesso
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              user_id:
+                type: integer
+              nome:
+                type: string
+              image:
+                type: string
+              data_cadastro:
+                type: string
+              data_atualizacao:
+                type: string
       400:
-        description: Erro de validação
+        description: Parâmetros inválidos
     """
 
     query = Blog.query
@@ -87,7 +107,8 @@ def list_blogs():
         "nome": b.nome,
         "image": get_image_as_base64(b.imagem),
         "user_id": b.user_id,
-        "data_cadastro": b.data_cadastro
+        "data_cadastro": b.data_cadastro,
+        "data_atualizacao": b.data_atualizacao
     } for b in blogs]), 200
 
 
@@ -96,7 +117,7 @@ def list_blogs():
 @blog_bp.route('/<int:id>/', methods=['GET'])
 def get_blog(id):
     """
-    Exibe os detalhes de um blog específico por ID
+    Retorna detalhes de um blog
     ---
     tags:
       - Blog
@@ -105,11 +126,25 @@ def get_blog(id):
         in: path
         type: integer
         required: true
+        description: ID do blog
     responses:
       200:
-        description: Cadastro encontrado
+        description: Dados do cadastro
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            user_id:
+              type: integer
+            nome:
+              type: string
+            image:
+              type: string
+            data_cadastro:
+              type: string
       400:
-        description: Erro de validação
+        description: Parâmetros inválidos
       404:
         description: Cadastro não encontrado
     """
@@ -126,7 +161,8 @@ def get_blog(id):
         "user_id": blog.user_id,
         "nome": blog.nome,
         "image": get_image_as_base64(blog.imagem),
-        "data_cadastro": blog.data_cadastro
+        "data_cadastro": blog.data_cadastro,
+        "data_atualizacao": blog.data_atualizacao
     }), 200
 
 
@@ -153,19 +189,28 @@ def create_blog(current_user):
           properties:
             nome:
               type: string
-              description: Nome (obrigatório)
+              description: Nome do blog (obrigatório)
             imagem:
               type: string
-              description: Imagem em Base64 (opcional)
+              description: Imagem no formato Base64 (opcional)
     responses:
       201:
-        description: Cadastro criado com sucesso
+        description: Cadastro realizado com sucesso
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            id:
+              type: integer
       400:
         description: Erro de validação
-      401:
-        description: Credenciais inválidas
+      403:
+        description: Acesso negado
+      404:
+        description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     data = request.get_json()
@@ -217,7 +262,7 @@ def create_blog(current_user):
 @token_required
 def update_blog(current_user, id):
     """
-    Edita um blog existente (Apenas se for o dono)
+    Atualiza os dados de um blog (apenas o dono)
     ---
     tags:
       - Blog
@@ -236,10 +281,10 @@ def update_blog(current_user, id):
           properties:
             nome:
               type: string
-              description: Nome (opcional)
+              description: Nome do blog (opcional)
             imagem:
               type: string
-              description: Imagem em Base64 (opcional)
+              description: Imagem no formato Base64 (opcional)
     responses:
       200:
         description: Cadastro atualizado com sucesso
@@ -250,9 +295,9 @@ def update_blog(current_user, id):
       403:
         description: Acesso negado
       404:
-        description: Blog não encontrado
+        description: Cadastro não encontrado
       500:
-        description: Erro interno no servidor
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     if not id:
@@ -297,7 +342,7 @@ def update_blog(current_user, id):
 @token_required
 def delete_blog(current_user, id):
     """
-    Remove um blog existente (Apenas se for o dono)
+    Remove um blog (Apenas se for o dono)
     ---
     tags:
       - Blog
@@ -308,7 +353,7 @@ def delete_blog(current_user, id):
         in: path
         type: integer
         required: true
-        description: ID do blog a ser deletado
+        description: ID do cadastro a ser deletado
     responses:
       200:
         description: Cadastro removido com sucesso
@@ -318,6 +363,8 @@ def delete_blog(current_user, id):
         description: Acesso negado
       404:
         description: Cadastro não encontrado
+      500:
+        description: Erro interno no servidor (ex.: imagem)
     """
 
     if not id:

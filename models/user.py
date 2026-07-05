@@ -10,6 +10,8 @@ class User(db.Model):
     email = db.Column(db.String(256), nullable=False)
     senha = db.Column(db.String(256), nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey('user_status.id'), nullable=False)
+    data_cadastro = db.Column(db.String(19))
+    data_atualizacao = db.Column(db.String(19))
 
     # Definir o modelo como string evita erro de importação circular
 

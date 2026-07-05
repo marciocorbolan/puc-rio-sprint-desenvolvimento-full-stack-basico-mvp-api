@@ -18,7 +18,7 @@ comment_bp = Blueprint('comment', __name__)
 @comment_bp.route('/', methods=['GET'])
 def list_comments():
     """
-    Lista comments com filtros dinâmicos
+    Lista comentários cadastrados (Suporte a filtros)
     ---
     tags:
       - Comment
@@ -26,20 +26,40 @@ def list_comments():
       - name: post_id
         in: query
         type: integer
-        description: ID do post (opcional, mas necessário se user_id não for informado)
+        required: true
+        description: Filtrar por ID da postagem (obrigatório)
       - name: data_cadastro_inicio
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data inicial (YYYY-MM-DD HH:MM:SS)
       - name: data_cadastro_fim
         in: query
         type: string
-        description: Formato YYYY-MM-DD HH:MM:SS
+        description: Data final (YYYY-MM-DD HH:MM:SS)
     responses:
       200:
         description: Lista processada com sucesso
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              user_id:
+                type: integer
+              user_nome:
+                type: string
+              blog_id:
+                type: integer
+              post_id:
+                type: integer
+              texto:
+                type: string
+              data_cadastro:
+                type: string
       400:
-        description: Erro de validação
+        description: Parâmetros inválidos
     """
 
     query = Comment.query
@@ -72,6 +92,7 @@ def list_comments():
         "id": c.id,
         "user_id": c.user_id,
         "user_nome": c.user.nome,
+        "blog_id": c.post.blog_id,
         "post_id": c.post_id,
         "texto": c.texto,
         "data_cadastro": c.data_cadastro
@@ -84,7 +105,7 @@ def list_comments():
 @token_required
 def create_comment(current_user):
     """
-    Cria um novo comment para o usuário logado
+    Cria um novo comentário vinculada a uma postagem
     ---
     tags:
       - Comment
@@ -105,13 +126,10 @@ def create_comment(current_user):
               description: ID do post (obrigatório)
             texto:
               type: string
-              description: Texto (obrigatório)
-            imagem:
-              type: string
-              description: Imagem em Base64 (opcional)
+              description: Texto do comentário (obrigatório)
     responses:
       201:
-        description: Cadastro criado com sucesso
+        description: Cadastro realizado com sucesso
       400:
         description: Erro de validação
       401:
@@ -155,7 +173,7 @@ def create_comment(current_user):
 @token_required
 def delete_comment(current_user, id):
     """
-    Remove um comment existente (Apenas se for o dono do post)
+    Remove um comentário (Apenas se for o dono da postagem)
     ---
     tags:
       - Comment

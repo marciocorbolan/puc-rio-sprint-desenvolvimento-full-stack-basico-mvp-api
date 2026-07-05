@@ -23,7 +23,7 @@ def get_info():
           type: object
           properties:
             status:
-              type: string
+              type: integer
               description: Status da API
             mensagem:
               type: string
