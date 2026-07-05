@@ -14,7 +14,12 @@ from utils.file_manager import get_image_as_base64, save_image_from_base64
 from utils.text_utils import slugify
 from utils.validation import validate_base64_image
 
+
 post_bp = Blueprint('post', __name__)
+
+
+#########################################################################
+
 
 @post_bp.route('/', methods=['GET'])
 def list_posts():
@@ -97,6 +102,7 @@ def list_posts():
         "data_atualizacao": p.data_atualizacao
     } for p in posts]), 200
 
+
 #########################################################################
 
 @post_bp.route('/<int:id>/', methods=['GET'])
@@ -145,6 +151,7 @@ def get_post(id, slug=None):
         "data_cadastro": post.data_cadastro,
         "data_atualizacao": post.data_atualizacao
     }), 200
+
 
 #########################################################################
 
@@ -247,6 +254,7 @@ def create_post(current_user):
 
     return jsonify({"message": "Cadastro realizado com sucesso", "id": post.id}), 201
 
+
 #########################################################################
 
 @post_bp.route('/<int:id>', methods=['PUT'])
@@ -331,6 +339,7 @@ def update_post(current_user, id):
     db.session.commit()
 
     return jsonify({"message": "Cadastro atualizado com sucesso"}), 200
+
 
 #########################################################################
 

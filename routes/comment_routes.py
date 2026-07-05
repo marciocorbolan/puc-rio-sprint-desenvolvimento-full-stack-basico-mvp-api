@@ -8,7 +8,12 @@ from models.comment import Comment
 from models.post import Post
 from middlewares.decorators import token_required
 
+
 comment_bp = Blueprint('comment', __name__)
+
+
+#########################################################################
+
 
 @comment_bp.route('/', methods=['GET'])
 def list_comments():
@@ -71,6 +76,7 @@ def list_comments():
         "texto": c.texto,
         "data_cadastro": c.data_cadastro
     } for c in comments]), 200
+
 
 #########################################################################
 
@@ -141,6 +147,7 @@ def create_comment(current_user):
     db.session.commit()
 
     return jsonify({"message": "Cadastro realizado com sucesso", "id": comment.id}), 201
+
 
 #########################################################################
 
