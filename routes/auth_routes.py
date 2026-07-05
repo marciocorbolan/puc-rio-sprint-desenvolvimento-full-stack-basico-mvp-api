@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from config import SECRET_KEY
 from database import db
 from models.user import User
-from middlewares.decorators import token_required
+from middlewares.decorators import token_required, login_limiter
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -98,6 +98,7 @@ def register():
 #########################################################################
 
 @auth_bp.route('/login', methods=['POST'])
+@login_limiter
 def login():
     """
     Realiza o login e retorna um token JWT
