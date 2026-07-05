@@ -2,16 +2,58 @@
 from flask import Blueprint, request, jsonify
 import jwt
 import datetime
+import uuid
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # --- Módulos do Projeto ---
 import config
 from database import db
 from models.user import User
-from middlewares.decorators import token_required, login_limiter
+from models.token_blacklist import TokenBlacklist
+from middlewares.decorators import login_limiter, token_required, refresh_token_required
 
 
 auth_bp = Blueprint('auth', __name__)
+
+
+#########################################################################
+
+def generate_access_token(user):
+    """Gera token de acesso (curto prazo)"""
+    expiration = datetime.datetime.now(datetime.timezone.utc) + \
+                 datetime.timedelta(hours=config.JWT_EXPIRATION_HOURS)
+    jti = str(uuid.uuid4())
+    
+    token = jwt.encode({
+        'user_id': user.id,
+        'cpfcnpj': user.cpfcnpj,
+        'email': user.email,
+        'nome': user.nome,
+        'jti': jti,
+        'token_type': 'access',
+        'exp': expiration
+    }, config.SECRET_KEY, algorithm="HS256")
+
+    return token, jti, expiration
+
+
+#########################################################################
+
+def generate_refresh_token(user):
+    """Gera token de refresh (longo prazo)"""
+    expiration = datetime.datetime.now(datetime.timezone.utc) + \
+                 datetime.timedelta(days=config.JWT_REFRESH_EXPIRATION_DAYS)
+    
+    jti = str(uuid.uuid4())
+    
+    token = jwt.encode({
+        'user_id': user.id,
+        'jti': jti,
+        'token_type': 'refresh',
+        'exp': expiration
+    }, config.SECRET_KEY, algorithm="HS256")
+    
+    return token, jti, expiration
 
 
 #########################################################################
@@ -107,7 +149,7 @@ def register():
 @login_limiter
 def login():
     """
-    Realiza o login e retorna um token JWT
+    Realiza o login e retorna access token + refresh token JWT
     ---
     tags:
       - Autenticação
@@ -128,7 +170,7 @@ def login():
               description: Senha (obrigatório)
     responses:
       200:
-        description: Token JWT retornado
+        description: Tokens JWT retornados (access + refresh)
       400:
         description: Erro de validação
       401:
@@ -150,23 +192,16 @@ def login():
     if not user or not check_password_hash(user.senha, senha):
         return jsonify({"message": "CPF/CNPJ ou senha inválidos"}), 401
     
-    # Tempo de expiração configurável
-    expiration = datetime.datetime.now(datetime.timezone.utc) + \
-                 datetime.timedelta(hours=config.JWT_EXPIRATION_HOURS)
-
-    # Criação do token
-    token = jwt.encode({
-        'user_id': user.id,
-        'cpfcnpj': user.cpfcnpj,
-        'email': user.email,
-        'nome': user.nome,
-        'exp': expiration
-    }, config.SECRET_KEY, algorithm="HS256")
+    # Gera tokens
+    access_token, access_jti, access_exp = generate_access_token(user)
+    refresh_token, refresh_jti, refresh_exp = generate_refresh_token(user)
 
     return jsonify({
-        'token': token,
+        'access_token': access_token,
+        'refresh_token': refresh_token,
         'user_id': user.id,
-        'expires_in': f"{config.JWT_EXPIRATION_HOURS} horas"
+        'access_expires_in': f"{config.JWT_EXPIRATION_HOURS} horas",
+        'refresh_expires_in': f"{config.JWT_REFRESH_EXPIRATION_DAYS} dias"
     })
 
 
@@ -218,3 +253,40 @@ def logout(current_user):
     except Exception:
         db.session.rollback()
         return jsonify({"message": "Erro ao realizar logout"}), 500
+
+
+#########################################################################
+
+@auth_bp.route('/refresh', methods=['POST'])
+@refresh_token_required
+def refresh(current_user):
+    """
+    Gera um novo access token (e novo refresh token) usando refresh token atual
+    ---
+    tags:
+      - Autenticação
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Novos tokens gerados com sucesso
+      401:
+        description: Refresh token inválido ou expirado
+    """
+    try:
+        # Gera novo access token
+        access_token, access_jti, _ = generate_access_token(current_user)
+        
+        # Token Rotation: Gera novo refresh token (melhor prática de segurança)
+        new_refresh_token, new_refresh_jti, _ = generate_refresh_token(current_user)
+        
+        return jsonify({
+            'access_token': access_token,
+            'refresh_token': new_refresh_token,
+            'user_id': current_user.id,
+            'expires_in': f"{config.JWT_EXPIRATION_HOURS} horas"
+        }), 200
+
+    except Exception:
+        db.session.rollback()
+        return jsonify({"message": "Erro ao gerar novo token"}), 500
