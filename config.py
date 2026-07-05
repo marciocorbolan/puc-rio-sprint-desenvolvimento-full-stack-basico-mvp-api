@@ -23,4 +23,7 @@ JWT_EXPIRATION_HOURS = 24
 
 # Tempo de expiração da blacklist (em horas) - deve ser igual ou maior que o token
 JWT_BLACKLIST_EXPIRATION_HOURS = 25
+
+# Tempo de expiração do Refresh Token (em dias)
+JWT_REFRESH_EXPIRATION_DAYS = 7
 # =================================================================
