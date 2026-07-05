@@ -20,4 +20,7 @@ SECRET_KEY = 'uma-chave-bem-longa-e-aleatoria-como-exemplo-123456789-!@#$'
 
 # Tempo de expiração do token (em horas)
 JWT_EXPIRATION_HOURS = 24
+
+# Tempo de expiração da blacklist (em horas) - deve ser igual ou maior que o token
+JWT_BLACKLIST_EXPIRATION_HOURS = 25
 # =================================================================
