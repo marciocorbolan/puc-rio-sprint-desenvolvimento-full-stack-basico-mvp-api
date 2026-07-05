@@ -5,12 +5,14 @@ import datetime
 from werkzeug.security import check_password_hash, generate_password_hash
 
 # --- Módulos do Projeto ---
-from config import SECRET_KEY
+import config
 from database import db
 from models.user import User
 from middlewares.decorators import token_required, login_limiter
 
+
 auth_bp = Blueprint('auth', __name__)
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -95,6 +97,7 @@ def register():
     
     return jsonify({"message": "Cadastro criado com sucesso"}), 201
 
+
 #########################################################################
 
 @auth_bp.route('/login', methods=['POST'])
@@ -139,11 +142,14 @@ def login():
     if not senha:
         return jsonify({"message": "Senha não informada"}), 400
 
-    user = User.query.filter_by(cpfcnpj=cpfcnpj).first()
-
     #  Verifica se o usuário existe e se a senha está correta
+    user = User.query.filter_by(cpfcnpj=cpfcnpj).first()
     if not user or not check_password_hash(user.senha, senha):
         return jsonify({"message": "CPF/CNPJ ou senha inválidos"}), 401
+    
+    # Tempo de expiração configurável
+    expiration = datetime.datetime.now(datetime.timezone.utc) + \
+                 datetime.timedelta(hours=config.JWT_EXPIRATION_HOURS)
 
     # Criação do token
     token = jwt.encode({
@@ -151,13 +157,15 @@ def login():
         'cpfcnpj': user.cpfcnpj,
         'email': user.email,
         'nome': user.nome,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
-    }, SECRET_KEY, algorithm="HS256")
+        'exp': expiration
+    }, config.SECRET_KEY, algorithm="HS256")
 
     return jsonify({
         'token': token,
-        'user_id': user.id
+        'user_id': user.id,
+        'expires_in': f"{config.JWT_EXPIRATION_HOURS} horas"
     })
+
 
 #########################################################################
 
