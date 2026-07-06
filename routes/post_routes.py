@@ -129,6 +129,7 @@ def list_posts():
 #########################################################################
 
 @post_bp.route('/<int:id>', methods=['GET'])
+@post_bp.route('/<int:id>/', methods=['GET'])
 def get_post(id):
     """
     Retorna detalhes de uma postagem
