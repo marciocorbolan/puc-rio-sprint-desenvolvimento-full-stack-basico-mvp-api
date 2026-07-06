@@ -16,7 +16,7 @@ from models.token_blacklist import TokenBlacklist
 # Configuração global do Rate Limiter
 limiter = Limiter(
     key_func=get_remote_address,      # Usa o IP do cliente
-    default_limits=["100 per day"]    # Limite padrão para todas as rotas
+    default_limits=["1000 per day"]    # Limite padrão para todas as rotas
 )
 
 # Rate Limit específico e mais restrito para a rota de Login
